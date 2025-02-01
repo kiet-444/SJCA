@@ -16,15 +16,9 @@ const verifyToken = (req, res, next) => {
 };
 
 // Middleware để kiểm tra quyền Admin
-const isAdmin = (req, res, next) => {
-    if (req.userRole !== 'admin') return res.status(403).json({ message: 'Access denied' });
+const isEmployer = (req, res, next) => {
+    if (req.userRole !== 'employer') return res.status(403).json({ message: 'Access denied' });
     next();
 };
 
-// Middleware cho Admin và User cụ thể
-const isUserOrAdmin = (req, res, next) => {
-    if (req.userRole !== 'admin' && req.userId !== req.params.id) return res.status(403).json({ message: 'Access denied' });
-    next();
-};
-
-module.exports = { verifyToken, isAdmin, isSalesAdmin, isAdoptedAdmin, isSponsor, isUserOrAdmin };
+module.exports = { verifyToken, isEmployer };
