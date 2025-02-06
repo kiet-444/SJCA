@@ -1,114 +1,139 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+
+
+const { Op } = require('sequelize');
+
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
 const dotenv = require('dotenv');
 dotenv.config();
 
-
 const transporter = nodemailer.createTransport({
     host: process.env.MAIL_HOST,
-    port: 587,
-    secure: false,
+    port: 465,
+    secure: true,
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
     },
+    tls: {
+        rejectUnauthorized: false,
+    },
 });
 
-// Register a new user
+// Đăng ký tài khoản
 const register = async (req, res) => {
     try {
-        const { username, fullname, email, password, address, phoneNumber } = req.body;
+        const { username, email, phoneNumber , address , password, role, taxCode } = req.body;
 
-
-        if (!username || !fullname || !email || !password || !address || !phoneNumber) {
-            return res.status(400).json({ message: 'Missing required fields' });
+        if (!username || !email || !phoneNumber || !address || !password || !role) {
+            return res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });
         }
 
-
-        // Check phoneNumber format
-        if (!/^\d{10}$/.test(phoneNumber)) {
-            return res.status(400).json({ message: 'Invalid phone number format' });
+        if (!['user', 'employer'].includes(role)) {
+            return res.status(400).json({ message: 'Vai trò không hợp lệ' });
         }
 
+        // Nếu là doanh nghiệp (employer) thì bắt buộc nhập mã số thuế
+        if (role === 'employer' && !taxCode) {
+            return res.status(400).json({ message: 'Mã số thuế là bắt buộc cho doanh nghiệp' });
+        }
 
-        const existingUser = await User.findOne({ email });
-
+        const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
-            return res.status(409).json({ message: 'User already exists' });
+            return res.status(409).json({ message: 'Email đã tồn tại' });
         }
 
         const verificationToken = crypto.randomBytes(32).toString('hex');
 
-        const user = new User({ username, fullname, email, password, address, phoneNumber, verificationToken });
-        await user.save();
+        const newUser = await User.create({
+            username,
+            email,
+            phoneNumber,
+            address,
+            password,
+            role,
+            taxCode: role === 'employer' ? taxCode : null,
+            verificationToken,
+        });
 
-        const verificationLink = `${process.env.BASE_URL}/verify-email?token=${verificationToken}`;
+        const verificationLink = `${process.env.BASE_URL}/api/auth/verify-email?token=${verificationToken}`;
 
         await transporter.sendMail({
             from: process.env.EMAIL_USER,
             to: email,
-            subject: 'Email Verification',
-            html: `<p>Please verify your email by clicking the following link:</p><a href="${verificationLink}">Verify Email</a>`,
+            subject: 'Xác nhận Email',
+            html: `<p>Vui lòng xác nhận email của bạn bằng cách nhấp vào liên kết sau:</p><a href="${verificationLink}">Xác nhận Email</a>`,
         });
 
-
-        res.status(201).json({ message: 'User registered successfully. Please check your email to verify your account.', error_code: 0 });
+        res.status(201).json({ message: 'Đăng ký thành công, vui lòng kiểm tra email để xác nhận tài khoản.', error_code: 0 });
     } catch (error) {
-        res.status(500).json({ message: 'Failed to register user', error });
+        res.status(500).json({ message: 'Lỗi đăng ký', error });
     }
 };
 
-
-// Login a user and return a JWT token
+// Đăng nhập
 const login = async (req, res) => {
     try {
         const { identifier, password } = req.body;
-        // Check if the identifier is an email or username
-        const isEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(identifier);
-        const user = isEmail
-            ? await User.findOne({ email: identifier })
-            : await User.findOne({ username: identifier });
-        if (!user || !(await user.comparePassword(password))) {
-            return res.status(401).json({ message: 'Invalid credentials' });
+
+        if (!identifier || !password) {
+            return res.status(400).json({ message: 'Thiếu thông tin đăng nhập' });
         }
 
+        // Tìm người dùng theo email hoặc username
+        const user = await User.findOne({
+            where: {
+                [Op.or]: [{ email: identifier }, { username: identifier }],
+            },
+        });
+
+        if (!user) {
+            return res.status(401).json({ message: 'Sai tài khoản hoặc mật khẩu' });
+        }
+
+        // Kiểm tra mật khẩu
+        const isPasswordValid = await user.comparePassword(password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ message: 'Sai tài khoản hoặc mật khẩu' });
+        }
+
+        // Kiểm tra xác minh email
         if (!user.isVerified) {
-            return res.status(401).json({ message: 'User is not verified' });
+            return res.status(403).json({ message: 'Tài khoản chưa xác minh email' });
         }
 
+        // Tạo token JWT
+        const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '24h' });
 
-        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '24h' });
-
-
-        res.status(200).json({ message: 'Login successful', token });
+        res.status(200).json({ message: 'Đăng nhập thành công', token });
     } catch (error) {
-        res.status(500).json({ message: 'Failed to login', error });
+        console.error('Lỗi khi đăng nhập:', error);
+        res.status(500).json({ message: 'Lỗi đăng nhập', error: error.message });
     }
 };
 
-
+// Xác minh email
 const verifyEmail = async (req, res) => {
     try {
         const { token } = req.query;
 
-        const user = await User.findOne({ verificationToken: token });
+        const user = await User.findOne({ where: { verificationToken: token } });
 
         if (!user) {
-            return res.status(400).json({ message: 'Invalid or expired verification token' });
+            return res.status(400).json({ message: 'Mã xác minh không hợp lệ hoặc đã hết hạn' });
         }
 
         user.isVerified = true;
         user.verificationToken = null;
         await user.save();
 
-        res.status(200).json({ message: 'Email verified successfully' });
+        res.status(200).json({ message: 'Xác minh email thành công' });
     } catch (error) {
-        res.status(500).json({ message: 'Failed to verify email', error });
+        res.status(500).json({ message: 'Lỗi xác minh email', error });
     }
 };
-
 
 module.exports = { register, login, verifyEmail };

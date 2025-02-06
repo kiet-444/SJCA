@@ -46,19 +46,18 @@ const createJob = async (req, res) => {
         return res.status(500).json({ message: 'Đã xảy ra lỗi khi tạo Job.' });
     }
 }
-
-const getAllJobs = async (req,res) => {
+const getAllJobs = async (req, res) => {
     try {
         const jobs = await Job.findAll();
         return res.status(200).json({
             message: 'Danh sách công việc đã được lấy thành công.',
             data: jobs,
-        })
+        });
     } catch (error) {
         console.error('Lỗi khi lấy danh sách công việc:', error);
         return res.status(500).json({ message: 'Đã xảy ra lỗi khi lấy danh sách công việc.' });
     }
-}
+};
 
 const getJobById = async (req,res) => {
     try {

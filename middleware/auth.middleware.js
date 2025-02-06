@@ -15,10 +15,15 @@ const verifyToken = (req, res, next) => {
     });
 };
 
-// Middleware để kiểm tra quyền Admin
+
 const isEmployer = (req, res, next) => {
     if (req.userRole !== 'employer') return res.status(403).json({ message: 'Access denied' });
     next();
 };
 
-module.exports = { verifyToken, isEmployer };
+const isUser = (req, res, next) => {
+    if (req.userRole !== 'user') return res.status(403).json({ message: 'Access denied' });
+    next();
+};
+
+module.exports = { verifyToken, isEmployer, isUser };

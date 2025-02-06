@@ -51,7 +51,7 @@ const { verifyToken } = require('../middleware/auth.middleware');
  *     security:
  *       - bearerAuth: []
  */
-router.post('/cvs', verifyToken, CVManagementController.createCV);
+router.post('/', verifyToken, CVManagementController.createCV);
 
 
 // Lấy danh sách CV của người dùng
