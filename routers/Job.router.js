@@ -87,7 +87,7 @@ const { verifyToken, isEmployer } = require('../middleware/auth.middleware');
  *                   items:
  *                     $ref: '#/components/schemas/Job'
  */
-router.get('/jobs', verifyToken, isEmployer, JobManagement.getAllJobs);
+router.get('/', verifyToken, isEmployer, JobManagement.getAllJobs);
 
 /**
  * @swagger
@@ -114,7 +114,7 @@ router.get('/jobs', verifyToken, isEmployer, JobManagement.getAllJobs);
  *       500:
  *         description: Đã xảy ra lỗi
  */
-router.get('/jobs/:id', verifyToken, isEmployer, JobManagement.getJobById);
+router.get('/:id', verifyToken, isEmployer, JobManagement.getJobById);
 
 /**
  * @swagger
@@ -138,7 +138,7 @@ router.get('/jobs/:id', verifyToken, isEmployer, JobManagement.getJobById);
  *       500:
  *         description: Đã xảy ra lỗi
  */
-router.post('/jobs/jobType', verifyToken, isEmployer, JobManagement.createJobType);
+router.post('/jobType', verifyToken, isEmployer, JobManagement.createJobType);
 
 /**
  * @swagger
@@ -162,6 +162,6 @@ router.post('/jobs/jobType', verifyToken, isEmployer, JobManagement.createJobTyp
  *       500:
  *         description: Đã xảy ra lỗi
  */
-router.post('/jobs', verifyToken, isEmployer, JobManagement.createJob);
+router.post('/', verifyToken, isEmployer, JobManagement.createJob);
 
 module.exports = router;
