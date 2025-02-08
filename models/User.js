@@ -29,6 +29,18 @@ const User = sequelize.define('User', {
     allowNull: true,
     unique: true,
   },
+  // education: {
+  //   type: DataTypes.STRING,
+  //   allowNull: false,
+  // },
+  // experience: {
+  //   type: DataTypes.STRING,
+  //   allowNull: false,
+  // },
+  // skills: {
+  //   type: DataTypes.STRING,
+  //   allowNull: false,
+  // },
   taxCode: {
     type: DataTypes.STRING,
     allowNull: true,

@@ -38,7 +38,7 @@ const { verifyToken, isEmployer } = require('../middleware/auth.middleware');
  *     security:
  *       - bearerAuth: []
  */
-router.get('/applications/job/:jobId', verifyToken, isEmployer, ApplicationManagementController.getApplicationsForJob);
+router.get('/job/:jobId', verifyToken, isEmployer, ApplicationManagementController.getApplicationsForJob);
 
 // Cập nhật trạng thái ứng tuyển
 /**
@@ -86,6 +86,6 @@ router.get('/applications/job/:jobId', verifyToken, isEmployer, ApplicationManag
  *     security:
  *       - bearerAuth: []
  */
-router.put('/applications/:applicationId/status', verifyToken, isEmployer, ApplicationManagementController.updateApplicationStatus);
+router.put('/:applicationId/status', verifyToken, isEmployer, ApplicationManagementController.updateApplicationStatus);
 
 module.exports = router;

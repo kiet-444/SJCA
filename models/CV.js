@@ -12,6 +12,10 @@ const CV = sequelize.define('CV', {
         },
     },
     file: {
+        type: DataTypes.BLOB('long'),// luu dang BLOB
+        allowNull: false,
+    },
+    filename: {
         type: DataTypes.STRING,
         allowNull: false,
     },
@@ -19,6 +23,11 @@ const CV = sequelize.define('CV', {
         type: DataTypes.INTEGER,
         allowNull: false,
     },   
+    // isDeleted: {
+    //     type: DataTypes.BOOLEAN,
+    //     allowNull: false,
+    //     defaultValue: false,
+    // },
     createdAt: {
         type: DataTypes.DATE,
         allowNull: false,
