@@ -1,7 +1,4 @@
-const CV_JOB = require('../models/CV_JOB');
-const Job =  require('../models/Job');
-const CV = require('../models/CV');
-const User = require('../models/User')
+const { Application, CV, User, JobPosting } = require('../models');
 
 
 const ApplicationManagementController = {
@@ -9,17 +6,17 @@ const ApplicationManagementController = {
     // Lấy danh sách ứng viên cho công việc
     async getApplicationsForJob(req, res) {
         try {
-            const { jobId } = req.params;
+            const { jobPostingId } = req.params;
 
             // Kiểm tra xem công việc có tồn tại không
-            const job = await Job.findByPk(jobId);
+            const job = await JobPosting.findByPk(jobPostingId);
             if (!job) {
                 return res.status(404).json({ message: 'Công việc không tồn tại.' });
             }
 
             // Lấy danh sách ứng viên đã ứng tuyển vào công việc
-            const applications = await CV_JOB.findAll({
-                where: { jobId },
+            const applications = await Application.findAll({
+                where: { jobPostingId },
                 include: [
                     {
                         model: CV, 
@@ -50,7 +47,7 @@ const ApplicationManagementController = {
             const { status } = req.body;
 
             // Kiểm tra xem ứng tuyển có tồn tại không
-            const application = await CV_JOB.findByPk(applicationId);
+            const application = await Application.findByPk(applicationId);
             if (!application) {
                 return res.status(404).json({ message: 'Ứng tuyển không tồn tại.' });
             }
@@ -80,7 +77,7 @@ const ApplicationManagementController = {
             const { applicationId } = req.params;
 
             // Kiểm tra xem ứng tuyển có tồn tại không
-            const application = await CV_JOB.findByPk(applicationId);
+            const application = await Application.findByPk(applicationId);
             if (!application) {
                 return res.status(404).json({ message: 'Ứng tuyển không tồn tại.' });
             }

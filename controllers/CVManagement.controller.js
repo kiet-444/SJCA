@@ -1,7 +1,4 @@
-const CV = require('../models/CV');
-const User = require('../models/User');
-const Job = require('../models/Job');
-const CV_JOB = require('../models/CV_JOB');
+const { CV, User, JobPosting, Application } = require('../models');
 
 const CVManagementController = { 
 
@@ -85,9 +82,9 @@ const CVManagementController = {
 
     async applyForJob(req, res) {
         try {
-            const { jobId, cvId } = req.body;
+            const { jobPostingId, cvId } = req.body;
 
-            const job = await Job.findByPk(jobId);
+            const job = await JobPosting.findByPk(jobPostingId);
             const cv = await CV.findByPk(cvId);
 
             if (!job || !cv) {
@@ -95,8 +92,8 @@ const CVManagementController = {
             }
 
             // Kiểm tra xem CV đã ứng tuyển công việc này chưa
-            const existingApplication = await CV_JOB.findOne({
-                where: { jobId, cvId },
+            const existingApplication = await Application.findOne({
+                where: { jobPostingId, cvId },
             });
 
             if (existingApplication) {
@@ -104,8 +101,8 @@ const CVManagementController = {
             }
 
             // Tạo mới ứng tuyển
-            const newApplication = await CV_JOB.create({
-                jobId,
+            const newApplication = await Application.create({
+                jobPostingId,
                 cvId,
                 status: 'pending',
             });
