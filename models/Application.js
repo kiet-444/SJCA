@@ -1,15 +1,15 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
-const Job = require('./Job'); 
+const JobPosting = require('./JobPosting'); 
 const CV = require('./CV')
 
 
-const CV_JOB = sequelize.define('CV_JOB', {
-    jobId: {
+const Application = sequelize.define('Application', {
+    jobPostingId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: Job, 
+            model: JobPosting, 
             key: 'id',
         },
     },
@@ -38,7 +38,6 @@ const CV_JOB = sequelize.define('CV_JOB', {
     },
 });
 
-CV_JOB.belongsTo(Job, { foreignKey: 'jobId' });
-CV_JOB.belongsTo(CV, { foreignKey: 'cvId' });
 
-module.exports = CV_JOB;
+
+module.exports = Application;

@@ -1,7 +1,6 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
-
 const { Op } = require('sequelize');
 
 const nodemailer = require('nodemailer');
@@ -26,19 +25,29 @@ const transporter = nodemailer.createTransport({
 // Đăng ký tài khoản
 const register = async (req, res) => {
     try {
-        const { username, email, phoneNumber , address , password, role, taxCode } = req.body;
+        const { username, email, phoneNumber , address , password, role, cccd } = req.body;
 
         if (!username || !email || !phoneNumber || !address || !password || !role) {
             return res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });
+        }
+
+        if (!role) {
+            return res.status(400).json({ message: 'Vai trò là bắt buộc' });
         }
 
         if (!['user', 'employer'].includes(role)) {
             return res.status(400).json({ message: 'Vai trò không hợp lệ' });
         }
 
-        // Nếu là doanh nghiệp (employer) thì bắt buộc nhập mã số thuế
-        if (role === 'employer' && !taxCode) {
-            return res.status(400).json({ message: 'Mã số thuế là bắt buộc cho doanh nghiệp' });
+        if (role === 'user') {
+            if (!username || !email || !phoneNumber || !address || !password) {
+                return res.status(400).json({ message: 'Thiếu thông tin bắt buộc cho tài khoản người dùng' });
+            }
+        } else if (role === 'employer') {
+            //Employer cần nhập email và cccd để có thể xác thực
+            if ((!email || !cccd) || !phoneNumber || !address || !password) {
+                return res.status(400).json({ message: 'Doanh nghiệp cần nhập email hoặc mã số thuế, số điện thoại, địa chỉ và mật khẩu' });
+            }
         }
 
         const existingUser = await User.findOne({ where: { email } });
@@ -49,13 +58,13 @@ const register = async (req, res) => {
         const verificationToken = crypto.randomBytes(32).toString('hex');
 
         const newUser = await User.create({
-            username,
-            email,
+            username: role === 'user' ? username : null, 
+            email: email || null,
             phoneNumber,
             address,
-            password,
+            password, 
             role,
-            taxCode: role === 'employer' ? taxCode : null,
+            cccd: role === 'employer' ? cccd || null : null,
             verificationToken,
         });
 
@@ -74,7 +83,6 @@ const register = async (req, res) => {
     }
 };
 
-// Đăng nhập
 const login = async (req, res) => {
     try {
         const { identifier, password } = req.body;

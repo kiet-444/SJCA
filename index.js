@@ -11,7 +11,8 @@
     const JobRouter = require('./routers/Job.router')
     const CVRouter = require('./routers/cv.router')
     const ApplicationRouter = require('./routers/application.router')
-    const UserRouter = require('./routers/user.router') 
+    const UserRouter = require('./routers/user.router')
+    const ExecuteRouter = require('./routers/jobExecute.router')
 
     const app = express();
 
@@ -36,7 +37,8 @@
     app.use('/api/users', UserRouter);
     app.use('/api/jobs', JobRouter);
     app.use('/api/cvs', CVRouter);
-    app.use('/api/applications', ApplicationRouter)
+    app.use('/api/applications', ApplicationRouter);
+    app.use('/api/executes', ExecuteRouter);
 
 
     app.listen(port, async  () => {

@@ -1,5 +1,4 @@
-const JobType = require('../models/JobType');
-const Job = require('../models/Job');
+const { JobType, JobPosting} = require('../models');
 
 const createJobType = async ( req, res) => {
     try {
@@ -23,18 +22,34 @@ const createJobType = async ( req, res) => {
 
 const createJob = async (req, res) => {
     try {
-        const { title, content, salary, expired_date, job_type_id } = req.body;
+        const userId = req.userId;
 
-        if (!title || !content || !expired_date || !job_type_id) {
-            return res.status(400).json({ message: 'Vui lòng cung cấp đầy đủ thông tin.' });
-        }
-
+        const {title, description, address,
+                 location, number_of_person, payment_type, gender_requirement, min_star_requirement, 
+                 min_job_requirement, status, expired_date,
+                 working_time, started_date, end_date,
+                 salary, jobTypeId, projectId } = req.body;
+        
+        
         const newJob = await Job.create({
             title,
-            content,
-            salary,
+            description,
+            address,
+            location,
+            number_of_person,
+            payment_type,
+            gender_requirement,
+            min_star_requirement,
+            min_job_requirement,
+            status,
             expired_date,
-            job_type_id,
+            working_time,
+            started_date,
+            end_date,
+            salary,
+            userId,
+            jobTypeId,
+            projectId
         });
 
         return res.status(201).json({
