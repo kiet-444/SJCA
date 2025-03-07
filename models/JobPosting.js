@@ -91,7 +91,8 @@ const JobPosting = sequelize.define('JobPosting', {
         },
     },
 }, {
+    tableName: 'JobPosting',
     timestamps: true
-});
+} );
 
 module.exports = JobPosting;

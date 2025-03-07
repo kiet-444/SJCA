@@ -13,6 +13,7 @@
     const ApplicationRouter = require('./routers/application.router')
     const UserRouter = require('./routers/user.router')
     const ExecuteRouter = require('./routers/jobExecute.router')
+    const ComplaintRouter = require('./routers/complaint.router')
 
     const app = express();
 
@@ -39,6 +40,7 @@
     app.use('/api/cvs', CVRouter);
     app.use('/api/applications', ApplicationRouter);
     app.use('/api/executes', ExecuteRouter);
+    app.use('/api/complaints', ComplaintRouter);
 
 
     app.listen(port, async  () => {

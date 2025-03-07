@@ -19,6 +19,7 @@ const JobType = sequelize.define('JobType', {
         },
     },
 }, {
+    tableName: 'JobType',
     timestamps: true
 });
 
