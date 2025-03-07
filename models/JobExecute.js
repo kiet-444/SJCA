@@ -48,6 +48,6 @@ const JobExecute = sequelize.define('JobExecute', {
     },
 }, {
     timestamps: true
-});
+},  { freezeTableName: true });
 
 module.exports = JobExecute;

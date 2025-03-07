@@ -41,14 +41,23 @@ const User = sequelize.define('User', {
   //   type: DataTypes.STRING,
   //   allowNull: false,
   // },
-  taxCode: {
-    type: DataTypes.STRING,
-    allowNull: true,
-    unique: true,
-    validate: {
-      isNumeric: true,
-      len: [10, 13],
-    },
+  // taxCode: {
+  //   type: DataTypes.STRING,
+  //   allowNull: true,
+  //   unique: true,
+  //   validate: {
+  //     isNumeric: true,
+  //     len: [10, 13],
+  //   },
+  // },
+  cccd: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true,
+      validate: {
+        isNumeric: true,
+        len: [12],
+      }
   },
   isVerified: {
     type: DataTypes.BOOLEAN,
@@ -57,10 +66,11 @@ const User = sequelize.define('User', {
   verificationToken: {
     type: DataTypes.STRING,
     allowNull: true,
-  },
-});
+  }, 
+},  { freezeTableName: true });
 
 // Hash password before saving
+
 User.beforeCreate(async (user) => {
   try {
     const salt = await bcrypt.genSalt(10);
