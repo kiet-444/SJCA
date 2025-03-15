@@ -1,6 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
-const User = require('./User')
+const User = require('./User');
 
 const CV = sequelize.define('CV', {
     userId: {
@@ -11,23 +11,22 @@ const CV = sequelize.define('CV', {
             key: 'id',
         },
     },
-    file: {
-        type: DataTypes.BLOB('long'),// luu dang BLOB
+    file_Id: {
+        type: DataTypes.STRING, 
+        allowNull: false,
+    },
+    file_Url: {
+        type: DataTypes.STRING,
         allowNull: false,
     },
     filename: {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    experience_year : {
+    experience_year: {
         type: DataTypes.INTEGER,
         allowNull: false,
-    },   
-    // isDeleted: {
-    //     type: DataTypes.BOOLEAN,
-    //     allowNull: false,
-    //     defaultValue: false,
-    // },
+    },
     createdAt: {
         type: DataTypes.DATE,
         allowNull: false,
@@ -40,7 +39,7 @@ const CV = sequelize.define('CV', {
     },
 });
 
-CV.belongsTo(User, { foreignKey: 'userId' }); 
+CV.belongsTo(User, { foreignKey: 'userId' });
 User.hasMany(CV, { foreignKey: 'userId' });
 
 module.exports = CV;

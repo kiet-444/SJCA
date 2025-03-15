@@ -2,22 +2,16 @@ const { CV, User, JobPosting, Application } = require('../models');
 
 const CVManagementController = { 
 
-    // Upload CV vào database
     async uploadCV(req, res) {
         try {
             const userId = req.userId;
-            const { experience_year } = req.body;
+            const { experience_year, file_Id, file_Url, filename } = req.body;
 
-            if (!req.file) {
-                return res.status(400).json({ message: 'Vui lòng tải lên một tệp.' });
-            }
-
-            // Lưu file dưới dạng Buffer trong database
             const newCV = await CV.create({
                 userId,
-                filename: req.file.originalname,
-                file: req.file.buffer,
-                fileType: req.file.mimetype,
+                file_Id,
+                file_Url,
+                filename,
                 experience_year
             });
 
