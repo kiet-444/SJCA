@@ -1,10 +1,10 @@
-const Project = require('../models/Project');
+const JobGroup = require('../models/JobGroup');
 
-const createProject = async (req, res) => {
+const creatJobGroup = async (req, res) => {
     try {
         const userId = req.userId;
         const { title, description, status } = req.body;
-        const project = await Project.create({
+        const project = await JobGroup.create({
             title,
             description,
             status: status || 'active',
@@ -20,4 +20,4 @@ const createProject = async (req, res) => {
     }
 };
 
-module.exports = { createProject };
+module.exports = { creatJobGroup };

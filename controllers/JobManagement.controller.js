@@ -28,10 +28,10 @@ const createJob = async (req, res) => {
                  location, number_of_person, payment_type, gender_requirement, min_star_requirement, 
                  min_job_requirement, status, expired_date,
                  working_time, started_date, end_date,
-                 salary, jobTypeId, projectId } = req.body;
+                 salary, jobTypeId, jobGroupId } = req.body;
         
         
-        const newJob = await Job.create({
+        const newJob = await JobPosting.create({
             title,
             description,
             address,
@@ -49,7 +49,7 @@ const createJob = async (req, res) => {
             salary,
             userId,
             jobTypeId,
-            projectId
+            jobGroupId
         });
 
         return res.status(201).json({
@@ -63,7 +63,7 @@ const createJob = async (req, res) => {
 }
 const getAllJobs = async (req, res) => {
     try {
-        const jobs = await Job.findAll();
+        const jobs = await JobPosting.findAll();
         return res.status(200).json({
             message: 'Danh sách công việc đã được lấy thành công.',
             data: jobs,
@@ -77,7 +77,7 @@ const getAllJobs = async (req, res) => {
 const getJobById = async (req,res) => {
     try {
         const { id } = req.params;
-        const job = await Job.findOne({
+        const job = await JobPosting.findOne({
             where: {id},
             include: [
                 {

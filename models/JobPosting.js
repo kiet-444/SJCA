@@ -74,11 +74,11 @@ const JobPosting = sequelize.define('JobPosting', {
             key: 'id',
         },
     },
-    projectId: {
+    jobGroupId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: 'Project',
+            model: 'JobGroup',
             key: 'id',
         },
     },

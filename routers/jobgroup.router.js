@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const ProjectController = require('../controllers/Project.controller');
+const JobGroupController = require('../controllers/JobGroup.controller');
 const { verifyToken, isEmployer } = require('../middleware/auth.middleware');
 
 /**
  * @swagger
- * /api/projects:
+ * /api/jobGroups:
  *   post:
  *     summary: Tạo project
  *     tags: [Project]
@@ -26,4 +26,4 @@ const { verifyToken, isEmployer } = require('../middleware/auth.middleware');
  *         description: Đã xảy ra lỗi
  */
 
-router.post('/projects', verifyToken, isEmployer, ProjectController.createProject);
+router.post('/jobGroups', verifyToken, isEmployer, JobGroupController.creatJobGroup);

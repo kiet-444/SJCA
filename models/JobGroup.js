@@ -1,7 +1,7 @@
 const {DataTypes} = require('sequelize');
 const sequelize = require('../config/db');
 
-const Project = sequelize.define('Project', {
+const JobGroup = sequelize.define('JobGroup', {
     title: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -27,8 +27,8 @@ const Project = sequelize.define('Project', {
         },
     }
 }, {
-    tableName: 'Project',
+    tableName: 'JobGroup',
     timestamps: true
 });
 
-module.exports = Project;
+module.exports = JobGroup;
