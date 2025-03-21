@@ -5,6 +5,7 @@ const JobPosting = require('../models/JobPosting');
 const JobExecute = require('../models/JobExecute');
 const PayOS = require('@payos/node');
 const { sequelize } = require('../models'); 
+
 dotenv.config();
 const payos = new PayOS(
     process.env.PAYOS_API_SECRET, 
@@ -84,7 +85,7 @@ const releasePayment = async (req, res) => {
         if (!escrowWalletEmployer) {
             return res.status(404).json({ success: false, message: "Escrow Wallet của nhà tuyển dụng không tìm thấy" });
         }
-
+        // Tinh tien nguoi dung
         const totalAmountOnePerson = jobPosting.salary / jobPosting.number_of_person;
         let totalAmountToDeduct = 0;
 

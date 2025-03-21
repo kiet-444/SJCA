@@ -15,7 +15,7 @@ const JobGroup = sequelize.define('JobGroup', {
         allowNull: false,
         defaultValue: 'active',
         validate: {
-            isIn: [['active', 'inactive']],
+            isIn: [['active', 'inactive', 'completed']],
         },
     },
     userId: {

@@ -27,3 +27,28 @@ const { verifyToken, isEmployer } = require('../middleware/auth.middleware');
  */
 
 router.post('/jobGroups', verifyToken, isEmployer, JobGroupController.creatJobGroup);
+
+
+/** 
+ * @swagger
+ * /api/jobGroups/{id}:
+ *   get:
+ *     summary: Lấy danh sách project
+ *     tags: [Project]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID project
+ *     responses:
+ *       200:
+ *         description: Danh sách project
+ *         content:
+ *           application/json:
+ *             schema:             
+ *               $ref: '#/components/schemas/Project'
+ */
+
+router.post('/jobGroups/:id', verifyToken, isEmployer, JobGroupController.updateStatusJobGroup);

@@ -2,6 +2,14 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
 
 const EscrowWallet = sequelize.define('EscrowWallet', {
+    jobGroupId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'JobGroup',
+            key: 'id',
+        },
+    },
     userId: {
         type: DataTypes.INTEGER,
         allowNull: false,
