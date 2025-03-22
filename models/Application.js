@@ -1,8 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
 const JobPosting = require('./JobPosting'); 
-const CV = require('./CV')
-
+const CV = require('./CV');
 
 const Application = sequelize.define('Application', {
     jobPostingId: {
@@ -22,9 +21,9 @@ const Application = sequelize.define('Application', {
         },
     },
     status: {
-        type: DataTypes.ENUM('pending', 'accepted', 'rejected'), 
+        type: DataTypes.ENUM('submitted', 'viewed', 'interview_schedule_sent', 'processing', 'approved', 'rejected'),
         allowNull: false,
-        defaultValue: 'pending',
+        defaultValue: 'submitted',
     },
     createdAt: {
         type: DataTypes.DATE,
@@ -37,7 +36,5 @@ const Application = sequelize.define('Application', {
         defaultValue: DataTypes.NOW,
     },
 });
-
-
 
 module.exports = Application;
