@@ -39,7 +39,7 @@ const CVManagementController = {
 
             const cvs = await CV.findAll({
                 where: { userId },
-                attributes: ['id', 'filename', 'createdAt', 'updatedAt'], 
+                attributes: ['id', 'filename', 'createdAt', 'updatedAt', 'status'], 
             });
 
             return res.status(200).json({
@@ -72,7 +72,7 @@ const CVManagementController = {
 async setDefaultCV(req, res) {
     try {
         const { userId, cvId } = req.body;
-        await CV.update({status: 'Casual'}, { where: { userId, statu:'Default' } });
+        await CV.update({status: 'Casual'}, { where: { userId, status:'Default' } });
         await CV.update({status: 'Default'}, { where: { id: cvId } });
         return res.status(200).json({ message: 'Default CV is set successfully.' });
     } catch (error) {

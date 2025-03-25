@@ -23,6 +23,11 @@ const CV = sequelize.define('CV', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    status: {
+        type: DataTypes.ENUM('Default', 'Casual', 'Deleted'),
+        allowNull: false,
+        defaultValue: 'Casual',
+    },
     createdAt: {
         type: DataTypes.DATE,
         allowNull: false,
