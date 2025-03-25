@@ -28,4 +28,27 @@ const ReviewController = require('../controllers/Review.controller');
  */
 router.post('/create', ReviewController.createReview);
 
+/**
+ * @swagger
+ * /api/reviews:
+ *   get:
+ *     summary: Lấy danh sách review
+ *     tags: [Review]
+ *     responses:
+ *       200:
+ *         description: Danh sách review
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Review'  
+ */
+router.get('/', ReviewController.getListRatings);
+
 module.exports = router;

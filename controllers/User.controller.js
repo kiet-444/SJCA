@@ -1,4 +1,88 @@
+const { Op } = require('sequelize');
 const User = require('../models/User');
+const Review = require('../models/Review');
+
+const getCompanyByRating = async (req, res) => {
+    try {
+        const topCompanies = await User.findAll({
+            where: { role: 'employer' }, 
+            include: [
+                {
+                    model: Review,
+                    attributes: ['rating'],
+                },
+            ],
+            attributes: ['id', 'companyName'], 
+        });
+
+        if (!topCompanies.length) {
+            return res.status(404).json({ message: 'Không có công ty nào' });
+        }
+
+        // Tính rating trung bình
+        const companiesWithAvgRating = topCompanies.map(company => {
+            const ratings = company.Reviews.map(review => review.rating);
+            const avgRating = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
+            return { ...company.toJSON(), avgRating };
+        });
+
+        // Lấy công ty có rating cao nhất
+        const maxRating = Math.max(...companiesWithAvgRating.map(c => c.avgRating));
+        const highestRatedCompanies = companiesWithAvgRating.filter(c => c.avgRating === maxRating);
+
+        // Chọn ngẫu nhiên một công ty trong nhóm có rating cao nhất
+        const randomCompany = highestRatedCompanies[Math.floor(Math.random() * highestRatedCompanies.length)];
+
+        res.status(200).json({ data: randomCompany });
+    } catch (error) {
+        res.status(500).json({ message: 'Wrong when get company by rating', error });
+    }
+};
+
+const getListCompany = async (req, res) => {
+    try {
+        const { name, minRating } = req.query;
+
+        // Điều kiện tìm kiếm (chỉ thêm nếu có query)
+        const whereCondition = { role: 'employer' };
+        if (name) {             
+            whereCondition.companyName = { [Op.like]: `%${name}%` };
+        }
+
+        // Truy vấn danh sách công ty
+        const companies = await User.findAll({
+            where: whereCondition,
+            include: [
+                {
+                    model: Review,
+                    attributes: ['rating'],
+                },
+            ],
+            attributes: ['id', 'companyName', 'email', 'address', 'phoneNumber'],
+        });
+
+        if (!companies.length) {
+            return res.status(200).json({ data: [], message: 'No companies found' });
+        }
+
+        // Tính điểm rating trung bình
+        let companiesWithAvgRating = companies.map(company => {
+            const ratings = company.Reviews.map(review => review.rating);
+            const avgRating = ratings.length ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1) : 0;
+            return { ...company.toJSON(), avgRating: parseFloat(avgRating) };
+        });
+
+        // Nếu có `minRating`, lọc danh sách
+        if (minRating) {
+            companiesWithAvgRating = companiesWithAvgRating.filter(company => company.avgRating >= parseFloat(minRating));
+        }
+
+        res.status(200).json({ data: companiesWithAvgRating });
+    } catch (error) {
+        res.status(500).json({ message: 'Wrong when get list company', error });
+    }
+};
+
 
 
 const updateUser = async (req, res) => {
@@ -62,12 +146,22 @@ const deleteUser = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
     try {
-        const users = await User.find();
+        const { role } = req.query;
+        const whereConditon = {};
+
+        if(role) {
+            if(!['worker', 'employer'].includes(role)) {
+                return res.status(400).json({ message: 'The role must be either "worker" or "employer"' });
+            }
+            whereConditon.role = role;
+        }
+        const users = await User.findAll({ where: whereConditon });
         res.status(200).json({ data: users });
     } catch (error) {
         res.status(500).json({ message: 'Failed to get users', error });
     }
 };
+
 
 
 const getUserById = async (req, res) => {
@@ -84,4 +178,4 @@ const getUserById = async (req, res) => {
 };
 
 
-module.exports = { updateUser, deleteUser, getAllUsers, getUserById };
+module.exports = { updateUser, deleteUser, getAllUsers, getUserById, getCompanyByRating, getListCompany };

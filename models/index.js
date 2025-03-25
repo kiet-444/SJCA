@@ -7,6 +7,7 @@ const Payment = require('./Payment');
 const CV = require('./CV');
 const Application = require('./Application');
 const ComplaintRecord = require('./Complaint');
+const Review = require('./Review');
 
 // User - Project
 User.hasMany(JobGroup, { foreignKey: 'userId' });
@@ -40,6 +41,11 @@ Payment.belongsTo(User, { foreignKey: 'userId' });
 //CV - User
 CV.belongsTo(User, { foreignKey: 'userId' });
 
+//Review - User
+User.hasMany(Review, { foreignKey: 'userId', onDelete: 'CASCADE' });
+Review.belongsTo(User, { foreignKey: 'userId' });
+
+
 
 module.exports = {
     JobGroup,
@@ -50,5 +56,6 @@ module.exports = {
     Payment,
     CV,
     Application,
-    ComplaintRecord
+    ComplaintRecord,
+    Review
 };

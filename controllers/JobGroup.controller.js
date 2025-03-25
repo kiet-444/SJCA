@@ -1,14 +1,66 @@
+const { Op } = require('sequelize');
 const JobGroup = require('../models/JobGroup');
 const JobPosting = require('../models/JobPosting');
+
+
+
+
+const getAllJobGroups = async (req, res) => {
+    try {
+        const { start_date, end_date } = req.query;
+        const today = new Date();
+        const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+        const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+
+        let whereCondition = { status: 'active' };
+
+        // Nếu có truyền start_date và end_date → lọc theo khoảng ngày
+        if (start_date && end_date) {
+            whereCondition.start_date = { [Op.between]: [new Date(start_date), new Date(end_date)] };
+        }
+
+        // Lấy danh sách jobGroups theo điều kiện lọc (hoặc lấy tất cả nếu không có query)
+        const jobGroups = await JobGroup.findAll({
+            where: whereCondition,
+            include: [
+                {
+                    model: JobPosting,
+                    attributes: ['id', 'title', 'description', 'salary', 'location'],
+                },
+            ],
+            order: [['start_date', 'ASC']],
+        });
+
+        // Tổng số job active
+        const totalJob = await JobGroup.count({ where: { status: 'active' } });
+
+        // Tổng số job active hôm nay
+        const totalJobToday = await JobGroup.count({
+            where: {
+                status: 'active',
+                start_date: { [Op.between]: [startOfDay, endOfDay] },
+            },
+        });
+
+        res.status(200).json({ totalJob, totalJobToday, data: jobGroups });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to get job groups', error });
+    }
+};
+
+
+
 const creatJobGroup = async (req, res) => {
     try {
         const userId = req.userId;
-        const { title, description, status } = req.body;
+        const { title, description, status, start_date, end_date } = req.body;
         const project = await JobGroup.create({
             title,
             description,
             status: status || 'inactive',
-            userId
+            userId,
+            start_date,
+            end_date
         });
         res.status(201).json({
             message: 'Project created successfully',
@@ -54,4 +106,4 @@ const updateStatusJobGroup = async (req, res) => {
 };
 
 
-module.exports = { creatJobGroup, updateStatusJobGroup };
+module.exports = { creatJobGroup, updateStatusJobGroup, getAllJobGroups};

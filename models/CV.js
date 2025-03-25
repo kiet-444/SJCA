@@ -23,10 +23,6 @@ const CV = sequelize.define('CV', {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    experience_year: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-    },
     createdAt: {
         type: DataTypes.DATE,
         allowNull: false,

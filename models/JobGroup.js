@@ -25,7 +25,15 @@ const JobGroup = sequelize.define('JobGroup', {
             model: 'User',
             key: 'id',
         },
-    }
+    },
+    start_date: {
+        type: DataTypes.DATE,
+        allowNull: true,
+    },
+    end_date: {
+        type: DataTypes.DATE,
+        allowNull: true,
+    },
 }, {
     tableName: 'JobGroup',
     timestamps: true

@@ -61,6 +61,48 @@ const createJob = async (req, res) => {
         return res.status(500).json({ message: 'Đã xảy ra lỗi khi tạo Job.' });
     }
 }
+
+const getJobPostings = async (req, res) => {
+    try {
+        const { title, location, min_salary, max_salary, expired_date } = req.query;
+
+        let whereCondition = {};
+
+        if (title) {
+            whereCondition.title = { [Op.iLike]: `%${title}%` }; // Tìm kiếm tiêu đề chứa từ khóa
+        }
+
+        if (location) {
+            whereCondition.location = location; // Lọc theo địa điểm
+        }
+
+        if (min_salary && max_salary) {
+            whereCondition.salary = { [Op.between]: [parseFloat(min_salary), parseFloat(max_salary)] };
+        } else if (min_salary) {
+            whereCondition.salary = { [Op.gte]: parseFloat(min_salary) };
+        } else if (max_salary) {
+            whereCondition.salary = { [Op.lte]: parseFloat(max_salary) };
+        }
+
+        if (expired_date) {
+            whereCondition.expired_date = { [Op.gte]: new Date(expired_date) }; // Lọc theo ngày hết hạn còn hiệu lực
+        }
+
+        const jobPostings = await JobPosting.findAll({
+            where: whereCondition,
+            attributes: [
+                'id', 'title', 'description', 'location', 'salary', 'expired_date', 'status'
+            ],
+            order: [['expired_date', 'ASC']], // Sắp xếp theo ngày hết hạn tăng dần
+        });
+
+        res.status(200).json({ data: jobPostings });
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi khi lấy danh sách công việc', error });
+    }
+};
+
+
 const getAllJobs = async (req, res) => {
     try {
         const jobs = await JobPosting.findAll();
@@ -99,6 +141,6 @@ const getJobById = async (req,res) => {
     }
 }
 
-module.exports = {createJobType, createJob, getAllJobs, getJobById}
+module.exports = {createJobType, createJob, getAllJobs, getJobById, getJobPostings}
 
 
