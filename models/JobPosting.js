@@ -41,9 +41,9 @@ const JobPosting = sequelize.define('JobPosting', {
     status: {
         type: DataTypes.STRING,
         allowNull: false,
-        defaultValue: 'active',
+        defaultValue: 'completed',
         validate: {
-            isIn: [['active', 'inactive']],
+            isIn: [['completed', 'incompleted']],
         },
     },
     expired_date: {
@@ -74,11 +74,11 @@ const JobPosting = sequelize.define('JobPosting', {
             key: 'id',
         },
     },
-    projectId: {
+    jobGroupId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: 'Project',
+            model: 'JobGroup',
             key: 'id',
         },
     },

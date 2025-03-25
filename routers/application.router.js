@@ -6,7 +6,7 @@ const { verifyToken, isEmployer } = require('../middleware/auth.middleware');
 // Lấy danh sách ứng viên cho công việc
 /**
  * @swagger
- * /applications/job/{jobId}:
+ * /applications/job/{jobPostingId}:
  *   get:
  *     summary: Lấy danh sách ứng viên cho công việc
  *     tags: [Application]
@@ -38,7 +38,7 @@ const { verifyToken, isEmployer } = require('../middleware/auth.middleware');
  *     security:
  *       - bearerAuth: []
  */
-router.get('/job/:jobId', verifyToken, isEmployer, ApplicationManagementController.getApplicationsForJob);
+router.get('/job/:jobPostingId', verifyToken, isEmployer, ApplicationManagementController.getApplicationsForJob);
 
 // Cập nhật trạng thái ứng tuyển
 /**
@@ -63,7 +63,7 @@ router.get('/job/:jobId', verifyToken, isEmployer, ApplicationManagementControll
  *             properties:
  *               status:
  *                 type: string
- *                 enum: [pending, accepted, rejected]
+ *                 enum: [submitted, viewed, interview_schedule_sent, processing, approved, rejected]
  *                 description: Trạng thái ứng tuyển
  *     responses:
  *       200:
@@ -87,5 +87,7 @@ router.get('/job/:jobId', verifyToken, isEmployer, ApplicationManagementControll
  *       - bearerAuth: []
  */
 router.put('/:applicationId/status', verifyToken, isEmployer, ApplicationManagementController.updateApplicationStatus);
+
+
 
 module.exports = router;

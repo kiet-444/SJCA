@@ -14,6 +14,9 @@
     const UserRouter = require('./routers/user.router')
     const ExecuteRouter = require('./routers/jobExecute.router')
     const ComplaintRouter = require('./routers/complaint.router')
+    const PaymentRouter = require('./routers/payment.router')
+    const ReviewRouter = require('./routers/review.router')
+    
 
     const app = express();
 
@@ -41,6 +44,8 @@
     app.use('/api/applications', ApplicationRouter);
     app.use('/api/executes', ExecuteRouter);
     app.use('/api/complaints', ComplaintRouter);
+    app.use('/api/reviews', ReviewRouter);
+    app.use('/api/payment', PaymentRouter);
 
 
     app.listen(port, async  () => {

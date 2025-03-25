@@ -26,36 +26,39 @@ const transporter = nodemailer.createTransport({
 // Đăng ký tài khoản
 const register = async (req, res) => {
     try {
-        const { username, email, phoneNumber , address , password, role, taxCode } = req.body;
+        const { email, fullName, companyName, phoneNumber , address , password, role } = req.body;
 
-        if (!username || !email || !phoneNumber || !address || !password || !role) {
-            return res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });
+        if (!email || !fullName || !phoneNumber || !address || !companyName || !password || !role) {
+            return res.status(400).json({ message: 'Not enough information' });
         }
 
         if (!['user', 'employer'].includes(role)) {
-            return res.status(400).json({ message: 'Vai trò không hợp lệ' });
+            return res.status(400).json({ message: 'The role must be either "user" or "employer"' });
         }
 
-        // Nếu là doanh nghiệp (employer) thì bắt buộc nhập mã số thuế
-        if (role === 'employer' && !taxCode) {
-            return res.status(400).json({ message: 'Mã số thuế là bắt buộc cho doanh nghiệp' });
+        if (role === 'user' && !fullName && !email.endsWith('@gmail.com') && !password) {
+            return res.status(400).json({ message: 'Email not match' });
+        } 
+
+        // Nếu là doanh nghiệp (employer)
+        if (role === 'employer' && !email.endsWith('@gmail.com') && !password && !companyName && !address && !phoneNumber) {
+            return res.status(400).json({ message: 'Company name, address, phone number, and password are required for employers' });
         }
 
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
-            return res.status(409).json({ message: 'Email đã tồn tại' });
+            return res.status(409).json({ message: 'Email already exists' });
         }
 
         const verificationToken = crypto.randomBytes(32).toString('hex');
 
-        const newUser = await User.create({
-            username,
+        const User = await User.create({
             email,
+            companyName,
             phoneNumber,
             address,
             password,
             role,
-            taxCode: role === 'employer' ? taxCode : null,
             verificationToken,
         });
 
@@ -80,7 +83,7 @@ const login = async (req, res) => {
         const { identifier, password } = req.body;
 
         if (!identifier || !password) {
-            return res.status(400).json({ message: 'Thiếu thông tin đăng nhập' });
+            return res.status(400).json({ message: 'Not enough informantion' });
         }
 
         // Tìm người dùng theo email hoặc username
@@ -91,13 +94,13 @@ const login = async (req, res) => {
         });
 
         if (!user) {
-            return res.status(401).json({ message: 'Sai tài khoản hoặc mật khẩu' });
+            return res.status(401).json({ message: 'Wrong username or password' });
         }
 
         // Kiểm tra mật khẩu
         const isPasswordValid = await user.comparePassword(password);
         if (!isPasswordValid) {
-            return res.status(401).json({ message: 'Sai tài khoản hoặc mật khẩu' });
+            return res.status(401).json({ message: 'Wrong username or password' });
         }
 
         // Kiểm tra xác minh email

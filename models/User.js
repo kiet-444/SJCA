@@ -3,7 +3,7 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
 
 const User = sequelize.define('User', {
-  username: {
+  companyName: {
     type: DataTypes.STRING,
     allowNull: false
   },
@@ -29,6 +29,10 @@ const User = sequelize.define('User', {
     allowNull: true,
     unique: true,
   },
+  avatar: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
   // education: {
   //   type: DataTypes.STRING,
   //   allowNull: false,
@@ -50,15 +54,15 @@ const User = sequelize.define('User', {
   //     len: [10, 13],
   //   },
   // },
-  cccd: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      unique: true,
-      validate: {
-        isNumeric: true,
-        len: [12],
-      }
-  },
+  // cccd: {
+  //     type: DataTypes.STRING,
+  //     allowNull: true,
+  //     unique: true,
+  //     validate: {
+  //       isNumeric: true,
+  //       len: [12],
+  //     }
+  // },
   isVerified: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,

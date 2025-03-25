@@ -1,7 +1,7 @@
 const {DataTypes} = require('sequelize');
 const sequelize = require('../config/db');
 
-const Project = sequelize.define('Project', {
+const JobGroup = sequelize.define('JobGroup', {
     title: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -15,7 +15,7 @@ const Project = sequelize.define('Project', {
         allowNull: false,
         defaultValue: 'active',
         validate: {
-            isIn: [['active', 'inactive']],
+            isIn: [['active', 'inactive', 'completed']],
         },
     },
     userId: {
@@ -25,10 +25,18 @@ const Project = sequelize.define('Project', {
             model: 'User',
             key: 'id',
         },
-    }
+    },
+    start_date: {
+        type: DataTypes.DATE,
+        allowNull: true,
+    },
+    end_date: {
+        type: DataTypes.DATE,
+        allowNull: true,
+    },
 }, {
-    tableName: 'Project',
+    tableName: 'JobGroup',
     timestamps: true
 });
 
-module.exports = Project;
+module.exports = JobGroup;

@@ -7,6 +7,7 @@ const multer = require('multer');
 const storage = multer.memoryStorage(); 
 const upload = multer({ storage });
 
+// Upload CV
 /**
  * @swagger
  * /cvs:
@@ -23,21 +24,9 @@ const upload = multer({ storage });
  *               file:
  *                 type: string
  *                 format: binary
- *               experience_year:
- *                 type: number
- *                 description: Số năm kinh nghiệm
  *     responses:
  *       201:
  *         description: CV được tạo thành công
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/CV'
  *       500:
  *         description: Lỗi tạo CV
  *     security:
@@ -45,7 +34,7 @@ const upload = multer({ storage });
  */
 router.post('/', verifyToken, upload.single('file'), CVManagementController.uploadCV);
 
-// 📌 Lấy danh sách CV của người dùng
+// Lấy danh sách CV của người dùng
 /**
  * @swagger
  * /cvs/user/{userId}:
@@ -62,17 +51,6 @@ router.post('/', verifyToken, upload.single('file'), CVManagementController.uplo
  *     responses:
  *       200:
  *         description: Danh sách CV của người dùng
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/CV'
  *       500:
  *         description: Lỗi lấy danh sách CV
  *     security:
@@ -80,31 +58,30 @@ router.post('/', verifyToken, upload.single('file'), CVManagementController.uplo
  */
 router.get('/user/:userId', verifyToken, CVManagementController.getUserCVs);
 
-// 📌 Lấy file CV từ database
-/**
- * @swagger
- * /cvs/{cvId}/file:
- *   get:
- *     summary: Lấy file CV từ database
- *     tags: [CV]
- *     parameters:
- *       - in: path
- *         name: cvId
- *         required: true
- *         schema:
- *           type: string
- *         description: ID của CV
- *     responses:
- *       200:
- *         description: Trả về file CV
- *       404:
- *         description: Không tìm thấy CV
- *     security:
- *       - bearerAuth: []
- */
-router.get('/:cvId/file', verifyToken, CVManagementController.getCVFile);
+// Lấy file CV
+// /**
+//  * @swagger
+//  * /cvs/{cvId}/file:
+//  *   get:
+//  *     summary: Lấy file CV từ database
+//  *     tags: [CV]
+//  *     parameters:
+//  *       - in: path
+//  *         name: cvId
+//  *         required: true
+//  *         schema:
+//  *           type: string
+//  *     responses:
+//  *       200:
+//  *         description: Trả về file CV
+//  *       404:
+//  *         description: Không tìm thấy CV
+//  *     security:
+//  *       - bearerAuth: []
+//  */
+// router.get('/:cvId/file', verifyToken, CVManagementController.getCVFile);
 
-// 📌 Gửi CV ứng tuyển công việc
+// Gửi CV ứng tuyển công việc
 /**
  * @swagger
  * /applications/job/{jobId}:
@@ -117,7 +94,6 @@ router.get('/:cvId/file', verifyToken, CVManagementController.getCVFile);
  *         required: true
  *         schema:
  *           type: string
- *         description: ID của công việc
  *     requestBody:
  *       required: true
  *       content:
@@ -127,17 +103,85 @@ router.get('/:cvId/file', verifyToken, CVManagementController.getCVFile);
  *             properties:
  *               cvId:
  *                 type: string
- *                 description: ID của CV
  *     responses:
  *       201:
- *         description: Ứng tuyển công việc thành công
+ *         description: Ứng tuyển thành công
  *       400:
- *         description: Dữ liệu không hợp lệ
- *       500:
- *         description: Lỗi ứng tuyển
+ *         description: Đã ứng tuyển trước đó
+ *       404:
+ *         description: Không tìm thấy công việc hoặc CV
  *     security:
  *       - bearerAuth: []
  */
 router.post('/job/:jobId', verifyToken, CVManagementController.applyForJob);
+
+// Xóa CV
+/**
+ * @swagger
+ * /cvs/{cvId}:
+ *   delete:
+ *     summary: Xóa CV theo ID
+ *     tags: [CV]
+ *     parameters:
+ *       - in: path
+ *         name: cvId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: CV đã được xóa thành công
+ *       404:
+ *         description: Không tìm thấy CV
+ *     security:
+ *       - bearerAuth: []
+ */
+router.delete('/:cvId', verifyToken, CVManagementController.deleteCV);
+
+// Đặt CV mặc định
+/**
+ * @swagger
+ * /cvs/{cvId}/set-default:
+ *   put:
+ *     summary: Đặt CV làm CV mặc định
+ *     tags: [CV]
+ *     parameters:
+ *       - in: path
+ *         name: cvId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: CV đã được đặt làm mặc định
+ *       404:
+ *         description: Không tìm thấy CV
+ *     security:
+ *       - bearerAuth: []
+ */
+router.put('/:cvId/set-default', verifyToken, CVManagementController.setDefaultCV);
+
+// Lấy danh sách ứng tuyển từ CV
+/**
+ * @swagger
+ * /cvs/{cvId}/applications:
+ *   get:
+ *     summary: Lấy danh sách công việc đã ứng tuyển bằng CV
+ *     tags: [Application]
+ *     parameters:
+ *       - in: path
+ *         name: cvId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Danh sách công việc ứng tuyển
+ *       404:
+ *         description: Không tìm thấy CV
+ *     security:
+ *       - bearerAuth: []
+ */
+router.get('/:cvId/applications', verifyToken, CVManagementController.getApplicationsByCV);
 
 module.exports = router;

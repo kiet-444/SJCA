@@ -10,14 +10,13 @@ const passport = require('../config/passport');
  *     User:
  *       type: object
  *       required:
- *         - username
  *         - email
  *         - password
  *       properties:
  *         id:
  *           type: string
  *           description: The auto-generated ID of the user
- *         username:
+ *         companyName:
  *           type: string
  *           description: The username of the user
  *         email:
@@ -44,7 +43,6 @@ const passport = require('../config/passport');
  *           description: Indicates if it's the admin's first login (applies only to admin)
  *       example:
  *         id: 60f6c2e2c4a1a72a344f321b
- *         username: johndoe
  *         email: johndoe@example.com
  *         password: $2a$10$7R6DhJ6zEJp2c.fXeq6gXe5DLJj.dZz.GO0Vuj1Q5jdpITGzyo3GG
  *         address: 123 Main St
@@ -66,15 +64,19 @@ const passport = require('../config/passport');
  *           schema:
  *             type: object
  *             required:
- *               - username
  *               - email
+ *               - companyName
+ *               - fullNamefull
  *               - password
  *               - address
  *               - phoneNumber
  *             properties:
- *               username:
+ *               fullName:
  *                 type: string
- *                 description: The username of the user
+ *                 description: The fullname of the user
+ *               companyName:
+ *                 type: string
+ *                 description: The companyname of the user
  *               email:
  *                 type: string
  *                 format: email
@@ -119,17 +121,17 @@ const passport = require('../config/passport');
  *           schema:
  *             type: object
  *             required:
- *               - identifier
+ *               - email
  *               - password
  *             properties:
- *               identifier:
+ *               email:
  *                 type: string
  *                 description: The username or email of the user
  *               password:
  *                 type: string
  *                 description: The password of the user
  *             example:
- *               identifier: johndoe@example.com
+ *               email: johndoe@example.com
  *               password: strongpassword123
  *     responses:
  *       200:

@@ -1,4 +1,7 @@
-const { Application, CV, User, JobPosting } = require('../models');
+const { Application, 
+        CV, 
+        User, 
+        JobPosting } = require('../models');
 
 
 const ApplicationManagementController = {
@@ -45,63 +48,78 @@ const ApplicationManagementController = {
         try {
             const { applicationId } = req.params;
             const { status } = req.body;
-
+            const validStatuses = ['submitted', 'viewed', 'interview schedule sent', 'processing', 'approved', 'rejected'];
+            if(!validStatuses.includes(status)) {
+                return res.status(400).json({ message: 'The status not valid' });
+            }
             // Kiểm tra xem ứng tuyển có tồn tại không
             const application = await Application.findByPk(applicationId);
             if (!application) {
-                return res.status(404).json({ message: 'Ứng tuyển không tồn tại.' });
+                return res.status(404).json({ message: 'The application not found' });
             }
-
-            // Kiểm tra trạng thái hợp lệ
-            if (!['pending', 'accepted', 'rejected'].includes(status)) {
-                return res.status(400).json({ message: 'Trạng thái không hợp lệ.' });
-            }
-
             // Cập nhật trạng thái ứng tuyển
             application.status = status;
             await application.save();
 
             return res.status(200).json({
-                message: 'Trạng thái ứng tuyển đã được cập nhật.',
+                message: 'Updated application status successfully.',
                 data: application,
             });
         } catch (error) {
-            console.error('Lỗi khi cập nhật trạng thái ứng tuyển:', error);
-            return res.status(500).json({ message: 'Đã xảy ra lỗi khi cập nhật trạng thái ứng tuyển.' });
+
+            // console.error('Wrong when update application status:', error);
+
+            return res.status(500).json({ message: 'Wrong when update application status' });
         }
     },
 
     // Phê duyệt đơn ứng tuyển
     async approveApplication(req, res) {
         try {
-            const { applicationId } = req.params;
-
-            // Kiểm tra xem ứng tuyển có tồn tại không
-            const application = await Application.findByPk(applicationId);
-            if (!application) {
-                return res.status(404).json({ message: 'Ứng tuyển không tồn tại.' });
-            }
-
-            // Kiểm tra xem trạng thái có hợp lệ để phê duyệt không
-            if (application.status !== 'pending') {
-                return res.status(400).json({ message: 'Ứng tuyển phải ở trạng thái "pending" để phê duyệt.' });
-            }
-
-            
-            application.status = 'accepted';
-            await application.save();
-
-            return res.status(200).json({
-                message: 'Đơn ứng tuyển đã được phê duyệt.',
-                data: application,
-            });
+          const { applicationId } = req.params;
+    
+          // Kiểm tra xem ứng tuyển có tồn tại không
+          const application = await Application.findByPk(applicationId);
+          if (!application) {
+            return res.status(404).json({ message: 'Application not found.' });
+          }
+    
+          // Lấy thông tin công việc và kiểm tra số lượng đã được phê duyệt
+          const job = await JobPosting.findByPk(application.jobPostingId);
+          const approvedCount = await Application.count({
+            where: { jobPostingId: application.jobPostingId, status: 'approved' },
+          });
+    
+          if (approvedCount >= job.job.number_of_person) {
+            return res.status(400).json({ message: 'The job has reached the maximum number of applicants.' });
+          }
+    
+          // Cập nhật trạng thái của ứng tuyển thành 'approved'
+          application.status = 'approved';
+          await application.save();
+    
+          // Kiểm tra lại nếu số lượng đã đủ và từ chối các đơn còn lại
+          const newApprovedCount = await Application.count({
+            where: { jobPostingId: application.jobPostingId, status: 'approved' },
+          });
+    
+          if (newApprovedCount >= job.number_of_person) {
+            await Application.update(
+              { status: 'rejected' },
+              { where: {
+                jobPostingId: application.jobPostingId,
+                status: ['submitted', 'viewed', 'interview schedule sent', 'processing', 'rejected'],
+            }}
+            );
+          }
+    
+          return res.status(200).json({ message: 'The application has been approved.', data: application });
         } catch (error) {
-            console.error('Lỗi khi phê duyệt đơn ứng tuyển:', error);
-            return res.status(500).json({ message: 'Đã xảy ra lỗi khi phê duyệt đơn ứng tuyển.' });
+          console.error('Wrong when approve application:', error);
+          return res.status(500).json({ message: 'Wrong when approve application' });
         }
-    },
-
-
+      },
+      
 };
 
 module.exports = ApplicationManagementController;

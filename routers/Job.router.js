@@ -164,4 +164,27 @@ router.post('/jobType', verifyToken, isEmployer, JobManagement.createJobType);
  */
 router.post('/', verifyToken, isEmployer, JobManagement.createJob);
 
+/**
+ * @swagger
+ * /jobs:
+ *   get:
+ *     summary: Lấy danh sách cơ vị cơ bản
+ *     tags: [Job]
+ *     responses:
+ *       200:
+ *         description: Danh sách cơ vị cơ bản
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Job'
+ */
+router.get('/', JobManagement.getJobPostings);
+
 module.exports = router;

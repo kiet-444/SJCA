@@ -160,5 +160,68 @@ router.get('/all', verifyToken, isEmployer, isUser, UserController.getAllUsers);
  */
 router.get('/:id', verifyToken, isUser , isEmployer, UserController.getUserById);
 
+/**
+ * @swagger
+ * /api/user/companies:
+ *   get:
+ *     summary: Get a list of companies
+ *     tags: [User]
+ *     parameters:
+ *       - in: query
+ *         name: name
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Filter companies by name (case-insensitive, partial match)
+ *       - in: query
+ *         name: minRating
+ *         schema:
+ *           type: number
+ *           format: float
+ *           minimum: 0
+ *           maximum: 5
+ *         required: false
+ *         description: Filter companies by minimum average rating (0 - 5)
+ *     responses:
+ *       200:
+ *         description: List of companies
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Company'
+ *       404:
+ *         description: No companies found
+ *       500:
+ *         description: Failed to retrieve companies
+ */
+router.get('/companies', UserController.getListCompany);
+
+
+
+/**
+ * @swagger
+ * /api/user/companies/maxRating:
+ *   get:
+ *     summary: Get a list of companies with the highest rating
+ *     tags: [User]
+ *     responses:
+ *       200:
+ *         description: List of companies with the highest rating
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Company'
+ *       500:
+ *         description: Failed to retrieve companies
+ */
+router.get('/companies/maxRating', UserController.getCompanyByRating);
+
 
 module.exports = router;

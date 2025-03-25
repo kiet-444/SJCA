@@ -35,7 +35,7 @@ const JobExecute = sequelize.define('JobExecute', {
         allowNull: false,
         defaultValue: 'active',
         validate: {
-            isIn: [['active', 'inactive']], // Ensures status is either 'active' or 'inactive'
+            isIn: [['success', 'active', 'failed']],
         },
     },
     note: {
