@@ -87,27 +87,15 @@ const getListCompany = async (req, res) => {
 
 const updateUser = async (req, res) => {
     try {
-        const { id } = req.params;
+        const userId = req.userId;
         const { password, ...updates } = req.body;
 
 
-        const user = await User.findById(id);
+        const user = await User.findById(userId);
 
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
-        }
-
-
-        if (user.role === 'admin' && user.firstLogin) {
-            if (password) {
-                user.password = password;
-                user.firstLogin = false;
-                await user.save();
-                return res.status(200).json({ message: 'Password updated successfully for first login', data: user });
-            } else {
-                return res.status(400).json({ message: 'Password is required for first login' });
-            }
         }
        
         if (password) {
@@ -117,7 +105,14 @@ const updateUser = async (req, res) => {
         }
 
 
-        Object.assign(user, updates);
+        if (user.role === 'employer') {
+            const { companyName, avatar, address, phoneNumber } = updates;
+            Object.assign(user, { companyName, avatar, address, phoneNumber });
+        } else {
+            const { fullname, avatar, birth, gender, address, phoneNumber } = updates;
+            Object.assign(user, { fullname, avatar, birth, gender, address, phoneNumber });
+        }
+
         const updatedUser = await user.save();
 
 

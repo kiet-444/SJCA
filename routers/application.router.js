@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const ApplicationManagementController = require('../controllers/ApplicationManagement.controller');
-const { verifyToken, isEmployer } = require('../middleware/auth.middleware');
+const { verifyToken, isEmployer, isUser } = require('../middleware/auth.middleware');
 
+
+// employer
 // Lấy danh sách ứng viên cho công việc
 /**
  * @swagger
@@ -88,6 +90,37 @@ router.get('/job/:jobPostingId', verifyToken, isEmployer, ApplicationManagementC
  */
 router.put('/:applicationId/status', verifyToken, isEmployer, ApplicationManagementController.updateApplicationStatus);
 
+
+
+//worker
+
+/**
+ * @swagger
+ * /applications/user:
+ *   get:
+ *     summary: Lấy danh sách ứng tuyển theo người dùng
+ *     tags: [Application]
+ *     responses:
+ *       200:
+ *         description: Danh sách ứng tuyển theo người dùng
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Application'
+ *       500:
+ *         description: Đã xảy ra lỗi
+ *     security:
+ *       - bearerAuth: []
+ */
+
+router.get('/user', verifyToken, isUser, ApplicationManagementController.getApplicationsByUserId);
 
 
 module.exports = router;

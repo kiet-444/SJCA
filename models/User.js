@@ -5,7 +5,11 @@ const sequelize = require('../config/db');
 const User = sequelize.define('User', {
   companyName: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: true
+  },
+  fullname : {
+    type: DataTypes.STRING,
+    allowNull: true
   },
   email: {
     type: DataTypes.STRING,
@@ -33,6 +37,15 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  birth: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+  gender: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+
   // education: {
   //   type: DataTypes.STRING,
   //   allowNull: false,

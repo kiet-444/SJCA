@@ -1,6 +1,7 @@
 const { Op } = require('sequelize');
 const JobGroup = require('../models/JobGroup');
 const JobPosting = require('../models/JobPosting');
+const User = require('../models/User');
 
 
 
@@ -104,6 +105,7 @@ const updateStatusJobGroup = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
 
 
 module.exports = { creatJobGroup, updateStatusJobGroup, getAllJobGroups};

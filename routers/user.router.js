@@ -82,7 +82,7 @@ const { verifyToken, isUser, isEmployer   } = require('../middleware/auth.middle
 *       500:
 *         description: Failed to update user profile
 */
-router.put('/update/:id', verifyToken, isUser , isEmployer  , UserController.updateUser);
+router.put('/update', verifyToken, isUser , isEmployer  , UserController.updateUser);
 
 
 // Delete user (admin only)
