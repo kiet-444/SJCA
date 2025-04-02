@@ -26,19 +26,19 @@ const transporter = nodemailer.createTransport({
 // Đăng ký tài khoản
 const register = async (req, res) => {
     try {
-        const { email, fullName, companyName, phoneNumber , address , password, role } = req.body;
+        const { email, fullname, companyName, phoneNumber, address, password, role } = req.body;
 
-        if (!email || !fullName || !phoneNumber || !address || !companyName || !password || !role) {
-            return res.status(400).json({ message: 'Not enough information' });
-        }
+        // if (!email || !fullname || !phoneNumber || !address || !companyName || !password || !role) {
+        //     return res.status(400).json({ message: 'Not enough information' });
+        // }
 
         if (!['user', 'employer'].includes(role)) {
             return res.status(400).json({ message: 'The role must be either "user" or "employer"' });
         }
 
-        if (role === 'user' && !fullName && !email.endsWith('@gmail.com') && !password) {
+        if (role === 'user' && !fullname && !email.endsWith('@gmail.com') && !password) {
             return res.status(400).json({ message: 'Email not match' });
-        } 
+        }
 
         // Nếu là doanh nghiệp (employer)
         if (role === 'employer' && !email.endsWith('@gmail.com') && !password && !companyName && !address && !phoneNumber) {
@@ -50,11 +50,19 @@ const register = async (req, res) => {
             return res.status(409).json({ message: 'Email already exists' });
         }
 
+        if (role === "employer" && phoneNumber) {
+            const existingPhoneNumber = await User.findOne({ where: { phoneNumber } });
+            if (existingPhoneNumber) {
+                return res.status(409).json({ message: 'Phone number already exists' });
+            }
+        }
+
         const verificationToken = crypto.randomBytes(32).toString('hex');
 
-        const User = await User.create({
+        const newUser = await User.create({
             email,
             companyName,
+            fullname,
             phoneNumber,
             address,
             password,
@@ -89,7 +97,7 @@ const login = async (req, res) => {
         // Tìm người dùng theo email hoặc username
         const user = await User.findOne({
             where: {
-                [Op.or]: [{ email: identifier }, { username: identifier }],
+                [Op.or]: [{ email: identifier }],
             },
         });
 

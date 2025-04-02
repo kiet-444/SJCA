@@ -158,7 +158,7 @@ router.get('/all', verifyToken, isEmployer, isUser, UserController.getAllUsers);
  *       500:
  *         description: Failed to retrieve user
  */
-router.get('/:id', verifyToken, isUser , isEmployer, UserController.getUserById);
+router.get('/:id', verifyToken, UserController.getUserById);
 
 /**
  * @swagger
