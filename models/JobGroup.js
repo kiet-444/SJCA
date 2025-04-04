@@ -13,7 +13,7 @@ const JobGroup = sequelize.define('JobGroup', {
     status: {
         type: DataTypes.STRING,
         allowNull: false,
-        defaultValue: 'active',
+        defaultValue: 'inactive',
         validate: {
             isIn: [['active', 'inactive', 'completed']],
         },

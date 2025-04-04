@@ -17,7 +17,27 @@ const payos = new PayOS(
 const createPayment = async (req, res) => {
     try {
         const userId = req.userId;
-        const { amount, orderId } = req.body;
+        const { orderId, jobGroupId } = req.body;
+
+        const jobGroup = await JobGroup.findByPk(jobGroupId);
+        if (!jobGroup || jobGroup.userId !== userId) {
+            return res.status(404).json({ success: false, message: "JobGroup không tồn tại hoặc không thuộc người dùng" });
+        }
+
+        const totalAmount = await calculateJobGroupTotal(jobGroupId);
+        const calculateJobGroupTotal = async (jobGroupId) => {
+            const jobPostings = await JobPosting.findAll({
+                where: { jobGroupId },
+            });
+        
+            let total = 0;
+            for (const job of jobPostings) {
+                total += job.salary || 0;
+            }
+        
+            return total;
+        };
+        
 
         const exitEscrowWallet = await EscrowWallet.findOne({ where: { userId } });
         if (exitEscrowWallet) {
@@ -25,11 +45,11 @@ const createPayment = async (req, res) => {
         } else {
             await EscrowWallet.create({ userId, balance: 0, orderCode: orderId });
         }
-
-        const response =  {
-            amount: amount,
+        
+        const response = {
+            amount: totalAmount,
             orderCode: orderId,
-            description: "Thanh toán cho công việc",
+            description: "Thanh toán JobGroup",
             returnUrl: "https://your-platform.com/payment-success",
             cancelUrl: "https://your-platform.com/payment-fail",
             merchantId: PAYOS_MERCHANT_ID,
@@ -39,20 +59,28 @@ const createPayment = async (req, res) => {
         res.json({ checkoutUrl: paymentLink.checkoutUrl });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ success: false, message: "Lỗi tạo thanh toán" });
+        res.status(500).json({ success: false, message: "Lỗi tạo thanh toán JobGroup" });
     }
 };
 
 // Xử lý callback từ PayOS khi thanh toán thành công
 const paymentCallback = async (req, res) => {
     try {
-        const {data} = req.body;
-        if(data.code === '00') {
+        const { data } = req.body;
+        if (data.code === '00') {
             const escrowWallet = await EscrowWallet.findOne({ where: { orderCode: data.orderCode } });
             if (escrowWallet) {
                 await escrowWallet.update({ balance: escrowWallet.balance + data.amount });
+
+                // Tìm JobGroup dựa vào orderCode, bạn cần lưu orderCode kèm jobGroupId nếu chưa có
+                const jobGroup = await JobGroup.findOne({ where: { userId: escrowWallet.userId } }); // hoặc thêm mapping table giữa JobGroup - orderCode
+
+                if (jobGroup) {
+                    await jobGroup.update({ isPaid: true, status: 'inactive' });
+                }
             }
         }
+
         res.status(200).send("OK");
     } catch (error) {
         console.error(error);
@@ -117,11 +145,11 @@ const releasePayment = async (req, res) => {
         await escrowWalletEmployer.update({ balance: escrowWalletEmployer.balance - totalAmountToDeduct }, { transaction });
 
         await transaction.commit(); // Xác nhận thay đổi
-        return res.status(200).json({ success: true, message: "Giải phóng thanh toán thành công" });
+        return res.status(200).json({ success: true, message: "success when release payment" });
     } catch (error) {
         await transaction.rollback(); // Hoàn tác nếu có lỗi
         console.error(error);
-        return res.status(500).json({ success: false, message: "Lỗi trong quá trình giải phóng thanh toán" });
+        return res.status(500).json({ success: false, message: "Wrong when release payment" });
     }
 };
 
