@@ -8,7 +8,6 @@ const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 
-
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -46,8 +45,6 @@ const register = async (req, res) => {
             return res.status(400).json({ message: 'Company name, address, phone number, and password are required for employers' });
         }
         
-        
-
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
             return res.status(409).json({ message: 'Email already exists' });
