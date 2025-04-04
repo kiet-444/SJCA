@@ -6,6 +6,8 @@ const { Op } = require('sequelize');
 
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
+const bcrypt = require('bcrypt');
+
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -32,18 +34,19 @@ const register = async (req, res) => {
             return res.status(400).json({ message: 'Not enough information' });
         }
 
-        if (!['user', 'employer'].includes(role)) {
+        if (!['worker', 'employer', 'admin', 'support staff'].includes(role)) {
             return res.status(400).json({ message: 'The role must be either "user" or "employer"' });
         }
 
-        if (role === 'user' && !fullName && !email.endsWith('@gmail.com') && !password) {
-            return res.status(400).json({ message: 'Email not match' });
-        } 
-
-        // Nếu là doanh nghiệp (employer)
-        if (role === 'employer' && !email.endsWith('@gmail.com') && !password && !companyName && !address && !phoneNumber) {
+        if (role === 'worker' && (!fullName || !email.endsWith('@gmail.com') || !password)) {
+            return res.status(400).json({ message: 'Full name, email, and password are required for workers' });
+        }
+        
+        if (role === 'employer' && (!companyName || !address || !phoneNumber || !password || !email.endsWith('@gmail.com'))) {
             return res.status(400).json({ message: 'Company name, address, phone number, and password are required for employers' });
         }
+        
+        
 
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
@@ -51,13 +54,15 @@ const register = async (req, res) => {
         }
 
         const verificationToken = crypto.randomBytes(32).toString('hex');
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-        const User = await User.create({
+        const newUser = await User.create({
             email,
+            fullName,
             companyName,
             phoneNumber,
             address,
-            password,
+            password: hashedPassword,
             role,
             verificationToken,
         });
@@ -80,16 +85,16 @@ const register = async (req, res) => {
 // Đăng nhập
 const login = async (req, res) => {
     try {
-        const { identifier, password } = req.body;
+        const { email, password } = req.body;
 
-        if (!identifier || !password) {
+        if (!email || !password) {
             return res.status(400).json({ message: 'Not enough informantion' });
         }
 
         // Tìm người dùng theo email hoặc username
         const user = await User.findOne({
             where: {
-                [Op.or]: [{ email: identifier }, { username: identifier }],
+                [Op.or]: [{ email: email }],
             },
         });
 
@@ -98,7 +103,7 @@ const login = async (req, res) => {
         }
 
         // Kiểm tra mật khẩu
-        const isPasswordValid = await user.comparePassword(password);
+        const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             return res.status(401).json({ message: 'Wrong username or password' });
         }
@@ -111,7 +116,7 @@ const login = async (req, res) => {
         // Tạo token JWT
         const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '24h' });
 
-        res.status(200).json({ message: 'Đăng nhập thành công', token });
+        res.status(200).json({ message: 'Đăng nhập thành công', token, role: user.role });
     } catch (error) {
         console.error('Lỗi khi đăng nhập:', error);
         res.status(500).json({ message: 'Lỗi đăng nhập', error: error.message });

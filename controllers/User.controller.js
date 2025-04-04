@@ -2,6 +2,7 @@ const { Op } = require('sequelize');
 const User = require('../models/User');
 const Review = require('../models/Review');
 
+
 const getCompanyByRating = async (req, res) => {
     try {
         const topCompanies = await User.findAll({
@@ -21,7 +22,8 @@ const getCompanyByRating = async (req, res) => {
 
         // Tính rating trung bình
         const companiesWithAvgRating = topCompanies.map(company => {
-            const ratings = company.Reviews.map(review => review.rating);
+            //check review truoc
+            const ratings = company.Reviews ? company.Reviews.map(review => review.rating) : [];
             const avgRating = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
             return { ...company.toJSON(), avgRating };
         });
@@ -90,20 +92,19 @@ const updateUser = async (req, res) => {
         const userId = req.userId;
         const { password, ...updates } = req.body;
 
-
-        const user = await User.findById(userId);
-
+        const user = await User.findByPk(userId);
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
        
         if (password) {
-            user.password = password;
+            const salt = await bcrypt.genSalt(10);
+            user.password = await bcrypt.hash(password, salt);
             await user.save();
-            return res.status(200).json({ message: 'Password updated successfully', data: user });
+            return res.status(200).json({ message: 'Password updated successfully' });
         }
-
+        
 
         if (user.role === 'employer') {
             const { companyName, avatar, address, phoneNumber } = updates;
@@ -128,7 +129,8 @@ const deleteUser = async (req, res) => {
         const { id } = req.params;
 
 
-        const deletedUser = await User.findByIdAndDelete(id);
+        const deletedUser = await User.destroy({ where: { id } });
+
         if (!deletedUser) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -157,12 +159,32 @@ const getAllUsers = async (req, res) => {
     }
 };
 
+const getTotalAccounts = async (req, res) => {
+    try {
+        const today = new Date();
+        const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const startOfYear = new Date(today.getFullYear(), 0, 1);
 
+        // Đếm số lượng tài khoản theo ngày, tháng, năm
+        const totalToday = await User.count({ where: { createdAt: { [Op.gte]: startOfDay } } });
+        const totalThisMonth = await User.count({ where: { createdAt: { [Op.gte]: startOfMonth } } });
+        const totalThisYear = await User.count({ where: { createdAt: { [Op.gte]: startOfYear } } });
 
-const getUserById = async (req, res) => {
+        res.status(200).json({
+            totalToday,
+            totalThisMonth,
+            totalThisYear
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to get total accounts', error });
+    }
+};
+
+const getUserByPkId = async (req, res) => {
     try {
         const { id } = req.params;
-        const user = await User.findById(id);
+        const user = await User.findByPk(id, { include: [{ model: Review }] });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -173,4 +195,4 @@ const getUserById = async (req, res) => {
 };
 
 
-module.exports = { updateUser, deleteUser, getAllUsers, getUserById, getCompanyByRating, getListCompany };
+module.exports = { updateUser, deleteUser, getAllUsers, getUserByPkId, getTotalAccounts, getCompanyByRating, getListCompany };

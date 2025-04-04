@@ -3,13 +3,14 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
 
 const User = sequelize.define('User', {
+
+  fullName: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
   companyName: {
     type: DataTypes.STRING,
-    allowNull: true
-  },
-  fullname : {
-    type: DataTypes.STRING,
-    allowNull: true
+    allowNull: false
   },
   email: {
     type: DataTypes.STRING,
@@ -21,7 +22,7 @@ const User = sequelize.define('User', {
     allowNull: false,
   },
   role: {
-    type: DataTypes.ENUM('user', 'employer'),
+    type: DataTypes.ENUM('user', 'employer', 'admin'),
     allowNull: false,
   },
   address: {
@@ -33,49 +34,6 @@ const User = sequelize.define('User', {
     allowNull: true,
     unique: true,
   },
-  avatar: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  birth: {
-    type: DataTypes.DATE,
-    allowNull: true,
-  },
-  gender: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-
-  // education: {
-  //   type: DataTypes.STRING,
-  //   allowNull: false,
-  // },
-  // experience: {
-  //   type: DataTypes.STRING,
-  //   allowNull: false,
-  // },
-  // skills: {
-  //   type: DataTypes.STRING,
-  //   allowNull: false,
-  // },
-  // taxCode: {
-  //   type: DataTypes.STRING,
-  //   allowNull: true,
-  //   unique: true,
-  //   validate: {
-  //     isNumeric: true,
-  //     len: [10, 13],
-  //   },
-  // },
-  // cccd: {
-  //     type: DataTypes.STRING,
-  //     allowNull: true,
-  //     unique: true,
-  //     validate: {
-  //       isNumeric: true,
-  //       len: [12],
-  //     }
-  // },
   isVerified: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,

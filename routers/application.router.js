@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const ApplicationManagementController = require('../controllers/ApplicationManagement.controller');
-const { verifyToken, isEmployer, isUser } = require('../middleware/auth.middleware');
+const { verifyToken, isEmployer, isUser, isWorker } = require('../middleware/auth.middleware');
 
 
 // employer
@@ -120,7 +120,7 @@ router.put('/:applicationId/status', verifyToken, isEmployer, ApplicationManagem
  *       - bearerAuth: []
  */
 
-router.get('/user', verifyToken, isUser, ApplicationManagementController.getApplicationsByUserId);
+router.get('/applications/user', verifyToken, isWorker, ApplicationManagementController.getApplicationsByUserId);
 
 
 module.exports = router;

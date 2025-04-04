@@ -20,6 +20,10 @@ const Application = sequelize.define('Application', {
             key: 'id', 
         },
     },
+    coverLetter: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+    },
     status: {
         type: DataTypes.ENUM('submitted', 'viewed', 'interview_schedule_sent', 'processing', 'approved', 'rejected'),
         allowNull: false,
