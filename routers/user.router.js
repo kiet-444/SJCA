@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const UserController = require('../controllers/User.controller');
-const { verifyToken, isEmployer, isWorker, isAdmin, isSupportStaff  } = require('../middleware/auth.middleware');
+const { verifyToken, isWorkerOrEmployer, isAdmin, isSupportStaff  } = require('../middleware/auth.middleware');
 
 
 /**
@@ -76,7 +76,7 @@ const { verifyToken, isEmployer, isWorker, isAdmin, isSupportStaff  } = require(
 *       500:
 *         description: Failed to update user profile
 */
-router.put('/update/:id', verifyToken, isWorker, isEmployer, UserController.updateUser);
+router.put('/update/:id', verifyToken, isWorkerOrEmployer, UserController.updateUser);
 
 
 
@@ -125,7 +125,7 @@ router.delete('/delete/:id', verifyToken, isAdmin, UserController.deleteUser);
  *       500:
  *         description: Failed to retrieve users
  */
-router.get('/all', verifyToken, isEmployer, isWorker, UserController.getAllUsers);
+router.get('/all', verifyToken, isAdmin , UserController.getAllUsers);
 
 //get total accounts
 /**
@@ -153,7 +153,7 @@ router.get('/all', verifyToken, isEmployer, isWorker, UserController.getAllUsers
  */
 router.get('/totalAccounts', verifyToken, isAdmin, UserController.getTotalAccounts);
 
-// Get user by ID (user or admin)
+// Get user by ID 
 /**
  * @swagger
  * /api/user/{id}:
@@ -179,7 +179,7 @@ router.get('/totalAccounts', verifyToken, isAdmin, UserController.getTotalAccoun
  *       500:
  *         description: Failed to retrieve user
  */
-router.get('/:id', verifyToken, isWorker , isEmployer, UserController.getUserByPkId);
+router.get('/:id', verifyToken, isWorkerOrEmployer, UserController.getUserByPkId);
 
 /**
  * @swagger

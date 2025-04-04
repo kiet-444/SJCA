@@ -123,3 +123,5 @@ router.post('/jobGroups', verifyToken, isEmployer, JobGroupController.creatJobGr
  */
 
 router.post('/jobGroups/:id', verifyToken, isEmployer, JobGroupController.updateStatusJobGroup);
+
+module.exports = router;

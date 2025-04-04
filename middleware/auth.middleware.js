@@ -28,6 +28,14 @@ const isWorker = (req, res, next) => {
     next();
 };
 
+const isWorkerOrEmployer = (req, res, next) => {
+    if (req.userRole !== 'worker' && req.userRole !== 'employer') {
+        return res.status(403).json({ message: 'Access denied' });
+    }
+    next();
+};
+
+
 const isAdmin = (req, res, next) => {
     if (req.userRole !== 'admin') return res.status(403).json({ message: 'Access denied' });
     next();
@@ -38,4 +46,4 @@ const isSupportStaff = (req, res, next) => {
     next();
 };
 
-module.exports = { verifyToken, isEmployer, isWorker, isAdmin, isSupportStaff };
+module.exports = { verifyToken, isWorkerOrEmployer, isWorker, isEmployer , isAdmin, isSupportStaff };

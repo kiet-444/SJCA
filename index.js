@@ -10,6 +10,7 @@
     require('dotenv').config();
 
     const Auth = require('./routers/auth.router')
+    const JobGroupRouter = require('./routers/jobgroup.router')
     const JobRouter = require('./routers/Job.router')
     const CVRouter = require('./routers/cv.router')
     const ApplicationRouter = require('./routers/application.router')
@@ -42,6 +43,7 @@
     // Define routes
     app.use('/api/auth', Auth);
     app.use('/api/users', UserRouter);
+    app.use('/api/jobGroups', JobGroupRouter);
     app.use('/api/jobs', JobRouter);
     app.use('/api/cvs', CVRouter);
     app.use('/api/applications', ApplicationRouter);
