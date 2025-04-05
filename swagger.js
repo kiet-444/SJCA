@@ -9,7 +9,7 @@ const swaggerDefinition = {
     },
     servers: [
         {
-            url: 'http://localhost:3000',
+            url: 'https://sjcp-fha4a5e8f6arc7cg.eastasia-01.azurewebsites.net',
         },
     ],
 };
