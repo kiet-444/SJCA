@@ -97,7 +97,7 @@ router.get('/jobGroups', JobGroupController.getAllJobGroups);
  *         description: Đã xảy ra lỗi
  */
 
-router.post('/jobGroups', verifyToken, isEmployer, JobGroupController.creatJobGroup);
+router.post('/', verifyToken, isEmployer, JobGroupController.creatJobGroup);
 
 
 /** 

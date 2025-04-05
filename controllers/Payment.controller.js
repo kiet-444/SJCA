@@ -52,7 +52,6 @@ const createPayment = async (req, res) => {
             description: "Thanh toán JobGroup",
             returnUrl: "https://your-platform.com/payment-success",
             cancelUrl: "https://your-platform.com/payment-fail",
-            merchantId: PAYOS_MERCHANT_ID,
         };
 
         const paymentLink = await payos.createPaymentLink(response);

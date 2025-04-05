@@ -51,7 +51,7 @@ const register = async (req, res) => {
         }
 
         const verificationToken = crypto.randomBytes(32).toString('hex');
-        const hashedPassword = await bcrypt.hash(password, 10);
+ 
 
         const newUser = await User.create({
             email,
@@ -59,7 +59,7 @@ const register = async (req, res) => {
             companyName,
             phoneNumber,
             address,
-            password: hashedPassword,
+            password,
             role,
             verificationToken,
         });
@@ -107,16 +107,16 @@ const login = async (req, res) => {
 
         // Kiểm tra xác minh email
         if (!user.isVerified) {
-            return res.status(403).json({ message: 'Tài khoản chưa xác minh email' });
+            return res.status(403).json({ message: 'The account has not been verified' });
         }
 
         // Tạo token JWT
         const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '24h' });
 
-        res.status(200).json({ message: 'Đăng nhập thành công', token, role: user.role });
+        res.status(200).json({ message: 'Login successfully', token, role: user.role });
     } catch (error) {
-        console.error('Lỗi khi đăng nhập:', error);
-        res.status(500).json({ message: 'Lỗi đăng nhập', error: error.message });
+        console.error('Wrong when login:', error);
+        res.status(500).json({ message: 'Wrong when login', error: error.message });
     }
 };
 
@@ -128,16 +128,16 @@ const verifyEmail = async (req, res) => {
         const user = await User.findOne({ where: { verificationToken: token } });
 
         if (!user) {
-            return res.status(400).json({ message: 'Mã xác minh không hợp lệ hoặc đã hết hạn' });
+            return res.status(400).json({ message: 'The verification token is invalid' });
         }
 
         user.isVerified = true;
         user.verificationToken = null;
         await user.save();
 
-        res.status(200).json({ message: 'Xác minh email thành công' });
+        res.status(200).json({ message: 'Verification successful' });
     } catch (error) {
-        res.status(500).json({ message: 'Lỗi xác minh email', error });
+        res.status(500).json({ message: 'Wrong when verify email', error });
     }
 };
 

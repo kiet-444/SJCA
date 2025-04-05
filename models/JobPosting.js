@@ -22,10 +22,10 @@ const JobPosting = sequelize.define('JobPosting', {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
-    payment_type: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
+    // payment_type: {
+    //     type: DataTypes.STRING,
+    //     allowNull: false,
+    // },
     gender_requirement: {
         type: DataTypes.STRING,
         allowNull: true,
