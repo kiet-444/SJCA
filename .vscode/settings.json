@@ -1,3 +1,6 @@
 {
-    "DockerRun.DisableDockerrc": true
+    "DockerRun.DisableDockerrc": true,
+    "git.ignoreLimitWarning": true,
+    "appService.defaultWebAppToDeploy": "/subscriptions/bffb4d67-09ae-4ce1-b293-711557596392/resourceGroups/sjcp_group/providers/Microsoft.Web/sites/sjcp",
+    "appService.deploySubpath": "."
 }

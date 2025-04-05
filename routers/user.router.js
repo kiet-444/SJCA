@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const UserController = require('../controllers/User.controller');
-const { verifyToken, isUser, isEmployer   } = require('../middleware/auth.middleware');
+const { verifyToken, isWorkerOrEmployer, isAdmin, isSupportStaff  } = require('../middleware/auth.middleware');
 
 
 /**
@@ -44,12 +44,6 @@ const { verifyToken, isUser, isEmployer   } = require('../middleware/auth.middle
  */
 
 
-
-
-
-
-
-
 // Update user profile (accessible by user or admin)
 /**
 * @swagger
@@ -73,7 +67,7 @@ const { verifyToken, isUser, isEmployer   } = require('../middleware/auth.middle
 *     responses:
 *       200:
 *         description: User profile updated successfully
-*         content:
+*         content:  
 *           application/json:
 *             schema:
 *               $ref: '#/components/schemas/User'
@@ -82,7 +76,8 @@ const { verifyToken, isUser, isEmployer   } = require('../middleware/auth.middle
 *       500:
 *         description: Failed to update user profile
 */
-router.put('/update/:id', verifyToken, isUser , isEmployer  , UserController.updateUser);
+router.put('/update/:id', verifyToken, isWorkerOrEmployer, UserController.updateUser);
+
 
 
 // Delete user (admin only)
@@ -107,7 +102,8 @@ router.put('/update/:id', verifyToken, isUser , isEmployer  , UserController.upd
 *       500:
 *         description: Failed to delete user
 */
-router.delete('/delete/:id', verifyToken, isUser, isEmployer,  UserController.deleteUser);
+router.delete('/delete/:id', verifyToken, isAdmin, UserController.deleteUser);
+
 
 
 // Get all users (admin only)
@@ -129,10 +125,35 @@ router.delete('/delete/:id', verifyToken, isUser, isEmployer,  UserController.de
  *       500:
  *         description: Failed to retrieve users
  */
-router.get('/all', verifyToken, isEmployer, isUser, UserController.getAllUsers);
+router.get('/all', verifyToken, isAdmin , UserController.getAllUsers);
 
+//get total accounts
+/**
+ * @swagger
+ * /api/user/totalAccounts:
+ *   get:
+ *     summary: Get total accounts
+ *     tags: [User]
+ *     responses:
+ *       200:
+ *         description: Total accounts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totalToday:
+ *                   type: number
+ *                 totalThisMonth:
+ *                   type: number
+ *                 totalThisYear:
+ *                   type: number
+ *       500:
+ *         description: Failed to get total accounts
+ */
+router.get('/totalAccounts', verifyToken, isAdmin, UserController.getTotalAccounts);
 
-// Get user by ID (user or admin)
+// Get user by ID 
 /**
  * @swagger
  * /api/user/{id}:
@@ -158,7 +179,7 @@ router.get('/all', verifyToken, isEmployer, isUser, UserController.getAllUsers);
  *       500:
  *         description: Failed to retrieve user
  */
-router.get('/:id', verifyToken, isUser , isEmployer, UserController.getUserById);
+router.get('/:id', verifyToken, isWorkerOrEmployer, UserController.getUserByPkId);
 
 /**
  * @swagger
@@ -200,7 +221,6 @@ router.get('/:id', verifyToken, isUser , isEmployer, UserController.getUserById)
  *         description: Failed to retrieve companies
  */
 router.get('/companies', UserController.getListCompany);
-
 
 
 /**

@@ -3,11 +3,14 @@
     const sequelize = require('./config/db')
     const swaggerUi = require('swagger-ui-express');
     const swaggerSpec = require('./swagger');
+
+    const cors = require('cors');
   
 
     require('dotenv').config();
 
     const Auth = require('./routers/auth.router')
+    const JobGroupRouter = require('./routers/jobgroup.router')
     const JobRouter = require('./routers/Job.router')
     const CVRouter = require('./routers/cv.router')
     const ApplicationRouter = require('./routers/application.router')
@@ -20,6 +23,7 @@
 
     const app = express();
 
+    app.use(cors());
     app.use(express.json());
 
     const port = process.env.PORT || 3000;
@@ -39,6 +43,7 @@
     // Define routes
     app.use('/api/auth', Auth);
     app.use('/api/users', UserRouter);
+    app.use('/api/jobGroups', JobGroupRouter);
     app.use('/api/jobs', JobRouter);
     app.use('/api/cvs', CVRouter);
     app.use('/api/applications', ApplicationRouter);
@@ -46,6 +51,34 @@
     app.use('/api/complaints', ComplaintRouter);
     app.use('/api/reviews', ReviewRouter);
     app.use('/api/payment', PaymentRouter);
+
+    app.post('/api/webhook/payos', async (req, res) => {
+
+        const JobGroup = require('./models/JobGroup'); 
+    
+        try {
+            const data = req.body;
+    
+            // Lấy jobGroupId từ orderCode hoặc extraData tuỳ bạn gửi lúc tạo thanh toán
+            const jobGroupId = data.orderCode || data.extraData?.jobGroupId;
+    
+            if (!jobGroupId) {
+                return res.status(400).json({ message: 'Thiếu jobGroupId trong webhook' });
+            }
+    
+            // Chỉ xử lý nếu thanh toán thành công
+            if (data.status === 'SUCCESS') {
+                await JobGroup.update({ is_paid: true }, { where: { id: jobGroupId } });
+                console.log(` Đã xác nhận thanh toán cho JobGroup ID: ${jobGroupId}`);
+            }
+    
+            res.status(200).json({ message: 'Webhook xử lý thành công' });
+        } catch (error) {
+            console.error(' Lỗi xử lý webhook PayOS:', error);
+            res.status(500).json({ message: 'Webhook xử lý thất bại' });
+        }
+    });
+    
 
 
     app.listen(port, async  () => {

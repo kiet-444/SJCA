@@ -119,6 +119,26 @@ const ApplicationManagementController = {
           return res.status(500).json({ message: 'Wrong when approve application' });
         }
       },
+
+    // get applications by userId
+    async getApplicationsByUserId(req, res) {
+        try {
+            const userId = req.userId;s
+            const applications = await Application.findAll({
+                where: { userId },
+                include: [JobPosting]
+            });
+    
+            return res.status(200).json({
+                message: 'List of applications is retrieved successfully.',
+                data: applications,
+            });
+        } catch (error) {
+            console.error('Wrong when get list of applications:', error);
+            return res.status(500).json({ message: 'Wrong when get list of applications' });
+        }
+    },
+
       
 };
 

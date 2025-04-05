@@ -3,8 +3,6 @@ const JobGroup = require('../models/JobGroup');
 const JobPosting = require('../models/JobPosting');
 
 
-
-
 const getAllJobGroups = async (req, res) => {
     try {
         const { start_date, end_date } = req.query;
@@ -82,6 +80,7 @@ const updateStatusJobGroup = async (req, res) => {
             return res.status(404).json({ message: 'JobGroup not found' });
         }
 
+        // Nếu chuyển sang "completed", phải kiểm tra job hoàn thành
         if (status === "completed") {
             const jobPostings = await JobPosting.findAll({ where: { jobGroupId: id } });
 
@@ -89,10 +88,31 @@ const updateStatusJobGroup = async (req, res) => {
                 return res.status(400).json({ message: "Không có JobPosting nào trong nhóm này" });
             }
 
-            const allCompleted = jobPostings.every(job => job.status === "completed");
+            const allCompleted = jobPostings.every(job => job.status === "completed");  
 
             if (!allCompleted) {
                 return res.status(400).json({ message: "Tất cả JobPosting phải ở trạng thái 'completed' trước khi cập nhật JobGroup" });
+            }
+        }
+
+        // Nếu chuyển sang "active", phải kiểm tra đã thanh toán + có job
+        if (status === "active") {
+            if (!jobGroup.is_paid) {
+                return res.status(400).json({ message: "JobGroup chưa được thanh toán đầy đủ" });
+            }
+
+            const jobPostings = await JobPosting.findAll({
+                where: { jobGroupId: id },
+                attributes: ['salary']
+            });
+
+            if (jobPostings.length === 0) {
+                return res.status(400).json({ message: "JobGroup chưa có Job nào" });
+            }
+
+            const totalAmount = jobPostings.reduce((sum, job) => sum + job.salary, 0);
+            if (totalAmount <= 0) {
+                return res.status(400).json({ message: "Không có mức lương hợp lệ trong JobGroup" });
             }
         }
 
@@ -104,6 +124,7 @@ const updateStatusJobGroup = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
 
 
 module.exports = { creatJobGroup, updateStatusJobGroup, getAllJobGroups};

@@ -43,7 +43,7 @@ const JobExecute = sequelize.define('JobExecute', {
         allowNull: false,
     },
     work_process: {
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
         allowNull: false,
     },
 }, {

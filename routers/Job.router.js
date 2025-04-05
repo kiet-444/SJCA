@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const JobManagement = require('../controllers/JobManagement.controller');
-const { verifyToken, isEmployer } = require('../middleware/auth.middleware');
+const { verifyToken, isEmployer, isWorkerOrEmployer } = require('../middleware/auth.middleware');
 
 /**
  * @swagger
@@ -87,7 +87,7 @@ const { verifyToken, isEmployer } = require('../middleware/auth.middleware');
  *                   items:
  *                     $ref: '#/components/schemas/Job'
  */
-router.get('/', verifyToken, isEmployer, JobManagement.getAllJobs);
+router.get('/', JobManagement.getAllJobs);
 
 /**
  * @swagger
@@ -114,7 +114,7 @@ router.get('/', verifyToken, isEmployer, JobManagement.getAllJobs);
  *       500:
  *         description: Đã xảy ra lỗi
  */
-router.get('/:id', verifyToken, isEmployer, JobManagement.getJobById);
+router.get('/:id', JobManagement.getJobById);
 
 /**
  * @swagger
@@ -168,11 +168,11 @@ router.post('/', verifyToken, isEmployer, JobManagement.createJob);
  * @swagger
  * /jobs:
  *   get:
- *     summary: Lấy danh sách cơ vị cơ bản
+ *     summary: Lấy danh sách cong viec cơ bản
  *     tags: [Job]
  *     responses:
  *       200:
- *         description: Danh sách cơ vị cơ bản
+ *         description: Danh sách cong viec cơ bản
  *         content:
  *           application/json:
  *             schema:
@@ -185,6 +185,6 @@ router.post('/', verifyToken, isEmployer, JobManagement.createJob);
  *                   items:
  *                     $ref: '#/components/schemas/Job'
  */
-router.get('/', JobManagement.getJobPostings);
+router.get('/jobPostings', JobManagement.getJobPostings);
 
 module.exports = router;
