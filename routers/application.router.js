@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const ApplicationManagementController = require('../controllers/ApplicationManagement.controller');
-const { verifyToken, isEmployer, isUser, isWorker } = require('../middleware/auth.middleware');
+const { verifyToken, isEmployer, isAdmin, isWorker } = require('../middleware/auth.middleware');
 
 
 // employer

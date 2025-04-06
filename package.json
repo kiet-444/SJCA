@@ -12,7 +12,7 @@
   "description": "",
   "dependencies": {
     "@payos/node": "^1.0.10",
-    "@vercel/node": "^5.0.2",
+    "@vercel/node": "^2.3.0",
     "axios": "^1.7.9",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
@@ -35,7 +35,7 @@
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^4.6.2",
     "uuid": "^11.1.0",
-    "vercel": "^39.2.6"
+    "vercel": "^41.4.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"

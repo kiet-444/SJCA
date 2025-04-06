@@ -184,4 +184,5 @@ router.put('/:cvId/set-default', verifyToken, CVManagementController.setDefaultC
  */
 router.get('/:cvId/applications', verifyToken, CVManagementController.getApplicationsByCV);
 
+
 module.exports = router;
