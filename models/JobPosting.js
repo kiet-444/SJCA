@@ -48,7 +48,7 @@ const JobPosting = sequelize.define('JobPosting', {
     },
     expired_date: {
         type: DataTypes.DATE,
-        allowNull: false, 
+        allowNull: true, 
     },
     working_time: {
         type: DataTypes.STRING,
