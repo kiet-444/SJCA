@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const ComplaintController = require('../controllers/Complaint.controller');
-const { verifyToken, isEmployer } = require('../middleware/auth.middleware');
+const { verifyToken, isWorkerOrEmployer } = require('../middleware/auth.middleware');
 
 
 /**
@@ -51,7 +51,7 @@ router.post('/complaint', verifyToken, ComplaintController.createComplaintRecord
  *     security:
  *       - bearerAuth: []
  */
-router.get('/', verifyToken, isEmployer, ComplaintController.getAllComplaintRecords);
+router.get('/', verifyToken, isWorkerOrEmployer, ComplaintController.getAllComplaintRecords);
 
 
 /**
