@@ -24,31 +24,34 @@ const createJob = async (req, res) => {
     try {
         const userId = req.userId;
 
-        const {title, description, address,
-                 location, number_of_person, payment_type, gender_requirement, min_star_requirement, 
-                 min_job_requirement, status, expired_date,
-                 working_time, started_date, end_date,
-                 salary, jobTypeId, jobGroupId } = req.body;
-        
-        
+        const { title, description, address,
+            location, number_of_person, gender_requirement, min_star_requirement,
+            status, started_date, end_date,
+            salary, jobType, jobGroupId } = req.body;
+
+        let newJobType = null;
+        if (jobType) {
+            newJobType = await JobType.create({
+                name: jobType,
+                description: null,
+                status: 'active',
+            })
+        }
+
         const newJob = await JobPosting.create({
             title,
             description,
             address,
             location,
             number_of_person,
-            payment_type,
             gender_requirement,
             min_star_requirement,
-            min_job_requirement,
             status,
-            expired_date,
-            working_time,
             started_date,
             end_date,
             salary,
             userId,
-            jobTypeId,
+            jobTypeId: newJobType? newJobType.id : null,
             jobGroupId
         });
 
@@ -93,7 +96,7 @@ const getJobPostings = async (req, res) => {
             attributes: [
                 'id', 'title', 'description', 'location', 'salary', 'expired_date', 'status'
             ],
-            order: [['expired_date', 'ASC']], // Sắp xếp theo ngày hết hạn tăng dần
+            order: [['expired_date', 'ASC']], 
         });
 
         res.status(200).json({ data: jobPostings });
@@ -103,7 +106,7 @@ const getJobPostings = async (req, res) => {
 };
 
 
-const getAllJobs = async (req, res) => {
+const getAllJobs = async (req, res) => { //lấy all job theo job group theo id cua job group
     try {
         const jobs = await JobPosting.findAll();
         return res.status(200).json({

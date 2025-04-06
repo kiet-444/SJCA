@@ -85,20 +85,20 @@ const updateStatusJobGroup = async (req, res) => {
             const jobPostings = await JobPosting.findAll({ where: { jobGroupId: id } });
 
             if (jobPostings.length === 0) {
-                return res.status(400).json({ message: "Không có JobPosting nào trong nhóm này" });
+                return res.status(400).json({ message: "No JobPosting in this group" });
             }
 
             const allCompleted = jobPostings.every(job => job.status === "completed");  
 
             if (!allCompleted) {
-                return res.status(400).json({ message: "Tất cả JobPosting phải ở trạng thái 'completed' trước khi cập nhật JobGroup" });
+                return res.status(400).json({ message: "All JobPosting in 'completed' when update JobGroup" });
             }
         }
 
         // Nếu chuyển sang "active", phải kiểm tra đã thanh toán + có job
         if (status === "active") {
             if (!jobGroup.is_paid) {
-                return res.status(400).json({ message: "JobGroup chưa được thanh toán đầy đủ" });
+                return res.status(400).json({ message: "JobGroup is not payment" });
             }
 
             const jobPostings = await JobPosting.findAll({
@@ -107,12 +107,12 @@ const updateStatusJobGroup = async (req, res) => {
             });
 
             if (jobPostings.length === 0) {
-                return res.status(400).json({ message: "JobGroup chưa có Job nào" });
+                return res.status(400).json({ message: "JobGroup enough job posting" });
             }
 
             const totalAmount = jobPostings.reduce((sum, job) => sum + job.salary, 0);
             if (totalAmount <= 0) {
-                return res.status(400).json({ message: "Không có mức lương hợp lệ trong JobGroup" });
+                return res.status(400).json({ message: "No valid salary in JobGroup" });
             }
         }
 

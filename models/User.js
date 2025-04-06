@@ -6,11 +6,11 @@ const User = sequelize.define('User', {
 
   fullName: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
   },
   companyName: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: true,
   },
   email: {
     type: DataTypes.STRING,
