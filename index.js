@@ -77,9 +77,6 @@
         }
     });
     
-    
-
-
     app.listen(port, async  () => {
         try {
             await sequelize.sync();
