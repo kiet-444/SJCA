@@ -33,6 +33,14 @@
     app.use(bodyParser.urlencoded({ extended: true }));
     app.use(bodyParser.json());
 
+    const corsOptions = {
+        origin: ['https://sjcp-fha4a5e8f6arc7cg.eastasia-01.azurewebsites.net', 'http://localhost:3000'],
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        allowedHeaders: ['Content-Type']
+    };
+    app.use(cors(corsOptions));
+    
+
     const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css"
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
         customCss:
@@ -53,20 +61,18 @@
     app.use('/api/payment', PaymentRouter);
 
     app.post('/api/webhook/payos', async (req, res) => {
-
-        const JobGroup = require('./models/JobGroup'); 
+        const JobGroup = require('./models/JobGroup');
     
         try {
             const data = req.body;
+            console.log('Webhook data received:', data); // Log dữ liệu webhook
     
-            // Lấy jobGroupId từ orderCode hoặc extraData tuỳ bạn gửi lúc tạo thanh toán
             const jobGroupId = data.orderCode || data.extraData?.jobGroupId;
     
             if (!jobGroupId) {
                 return res.status(400).json({ message: 'Thiếu jobGroupId trong webhook' });
             }
     
-            // Chỉ xử lý nếu thanh toán thành công
             if (data.status === 'SUCCESS') {
                 await JobGroup.update({ is_paid: true }, { where: { id: jobGroupId } });
                 console.log(` Đã xác nhận thanh toán cho JobGroup ID: ${jobGroupId}`);
@@ -78,6 +84,7 @@
             res.status(500).json({ message: 'Webhook xử lý thất bại' });
         }
     });
+    
     
 
 
