@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo 'No test defined. Skipping test.'",
-    "start": "nodemon index.js"
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
