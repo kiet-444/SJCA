@@ -33,14 +33,6 @@
     app.use(bodyParser.urlencoded({ extended: true }));
     app.use(bodyParser.json());
 
-    const corsOptions = {
-        origin: ['https://sjcp-fha4a5e8f6arc7cg.eastasia-01.azurewebsites.net', 'http://localhost:3000'],
-        methods: ['GET', 'POST', 'PUT', 'DELETE'],
-        allowedHeaders: ['Content-Type']
-    };
-    app.use(cors(corsOptions));
-    
-
     const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css"
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
         customCss:
