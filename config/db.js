@@ -1,7 +1,7 @@
 require('dotenv').config();
 const { Sequelize } = require('sequelize');
 
-const sequelize = new Sequelize({
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
     host: process.env.DB_HOST,
     username: process.env.DB_USER,
     port: process.env.DB_PORT,
@@ -16,3 +16,21 @@ sequelize
     // .catch(err => console.error('Unable to connect to the database:', err));
 
 module.exports = sequelize;
+
+// require('dotenv').config();
+// const { Sequelize } = require('sequelize');
+
+// const sequelize = new Sequelize(process.env.DATABASE_URL, {
+//     dialect: 'postgres',
+//     dialectOptions: {
+//         ssl: {
+//             require: false,
+//             rejectUnauthorized: false // chỉ dùng cho dev/test
+//         }
+//     }
+// });
+
+//  module.exports = sequelize;
+
+
+

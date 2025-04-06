@@ -29,9 +29,9 @@ const register = async (req, res) => {
     try {
         const { email, fullName, companyName, phoneNumber , address , password, role } = req.body;
 
-        if (!email || !fullName || !phoneNumber || !address || !companyName || !password || !role) {
-            return res.status(400).json({ message: 'Not enough information' });
-        }
+        // if (!email || !fullName || !phoneNumber || !address || !companyName || !password || !role) {
+        //     return res.status(400).json({ message: 'Not enough information' });
+        // }
 
         if (!['worker', 'employer', 'admin', 'support staff'].includes(role)) {
             return res.status(400).json({ message: 'The role must be either "user" or "employer"' });
