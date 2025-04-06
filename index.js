@@ -76,6 +76,10 @@
             res.status(500).json({ message: 'Webhook xử lý thất bại' });
         }
     });
+
+    app.get('/', (req, res) => {
+        res.send('Chào mừng đến với ứng dụng của bạn!');
+    });
     
     app.listen(port, async  () => {
         try {
