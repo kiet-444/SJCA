@@ -4,8 +4,22 @@ const CVManagementController = require('../controllers/CVManagement.controller')
 const { verifyToken } = require('../middleware/auth.middleware');
 const multer = require('multer');
 
-const storage = multer.memoryStorage(); 
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
+
+/**
+ * @swagger
+ * tags:
+ *   name: CV
+ *   description: Quản lý hồ sơ CV
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   name: Application
+ *   description: Quản lý ứng tuyển
+ */
 
 // Upload CV
 /**
@@ -47,7 +61,6 @@ router.post('/', verifyToken, upload.single('file'), CVManagementController.uplo
  *         required: true
  *         schema:
  *           type: string
- *         description: ID của người dùng
  *     responses:
  *       200:
  *         description: Danh sách CV của người dùng
@@ -58,7 +71,7 @@ router.post('/', verifyToken, upload.single('file'), CVManagementController.uplo
  */
 router.get('/user/:userId', verifyToken, CVManagementController.getUserCVs);
 
-// Lấy file CV
+// // Lấy file CV
 // /**
 //  * @swagger
 //  * /cvs/{cvId}/file:
@@ -84,7 +97,7 @@ router.get('/user/:userId', verifyToken, CVManagementController.getUserCVs);
 // Gửi CV ứng tuyển công việc
 /**
  * @swagger
- * /applications/job/{jobId}:
+ * /cvs/job/{jobId}/apply:
  *   post:
  *     summary: Gửi CV ứng tuyển công việc
  *     tags: [Application]
@@ -113,7 +126,7 @@ router.get('/user/:userId', verifyToken, CVManagementController.getUserCVs);
  *     security:
  *       - bearerAuth: []
  */
-router.post('/job/:jobId', verifyToken, CVManagementController.applyForJob);
+router.post('/job/:jobId/apply', verifyToken, CVManagementController.applyForJob);
 
 // Xóa CV
 /**
@@ -183,6 +196,5 @@ router.put('/:cvId/set-default', verifyToken, CVManagementController.setDefaultC
  *       - bearerAuth: []
  */
 router.get('/:cvId/applications', verifyToken, CVManagementController.getApplicationsByCV);
-
 
 module.exports = router;

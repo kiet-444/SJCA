@@ -70,6 +70,29 @@ const { verifyToken, isEmployer, isWorkerOrEmployer } = require('../middleware/a
  * @swagger
  * /jobs:
  *   get:
+ *     summary: Lấy danh sách cong viec cơ bản
+ *     tags: [Job]
+ *     responses:
+ *       200:
+ *         description: Danh sách cong viec cơ bản
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Job'
+ */
+router.get('/jobPostings', JobManagement.getJobPostings);
+
+/**
+ * @swagger
+ * /jobs:
+ *   get:
  *     summary: Lấy danh sách công việc
  *     tags: [Job]
  *     responses:
@@ -164,27 +187,6 @@ router.post('/jobType', verifyToken, isEmployer, JobManagement.createJobType);
  */
 router.post('/', verifyToken, isEmployer, JobManagement.createJob);
 
-/**
- * @swagger
- * /jobs:
- *   get:
- *     summary: Lấy danh sách cong viec cơ bản
- *     tags: [Job]
- *     responses:
- *       200:
- *         description: Danh sách cong viec cơ bản
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Job'
- */
-router.get('/jobPostings', JobManagement.getJobPostings);
+
 
 module.exports = router;

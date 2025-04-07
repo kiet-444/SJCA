@@ -15,38 +15,41 @@ const passport = require('../config/passport');
  *       properties:
  *         id:
  *           type: string
- *           description: The auto-generated ID of the user
+ *           description: ID tự động sinh của người dùng
  *         companyName:
  *           type: string
- *           description: The username of the user
+ *           description: Tên công ty của người dùng (chỉ với employer)
+ *         fullName:
+ *           type: string
+ *           description: Họ tên đầy đủ của người dùng
  *         email:
  *           type: string
- *           description: The email of the user
+ *           description: Email của người dùng
  *         password:
  *           type: string
- *           description: The hashed password of the user
+ *           description: Mật khẩu (đã được mã hóa)
  *         address:
  *           type: string
- *           description: The address of the user
+ *           description: Địa chỉ người dùng
  *         phoneNumber:
  *           type: string
- *           description: The phone number of the user
+ *           description: Số điện thoại
  *         role:
  *           type: string
  *           enum:
  *             - user
  *             - admin
- *           description: The role of the user (either 'user' or 'admin')
- *           default: user
+ *           description: Vai trò của người dùng
  *         firstLogin:
  *           type: boolean
- *           description: Indicates if it's the admin's first login (applies only to admin)
+ *           description: Đăng nhập lần đầu (chỉ áp dụng với admin)
  *       example:
  *         id: 60f6c2e2c4a1a72a344f321b
- *         email: johndoe@example.com
- *         password: $2a$10$7R6DhJ6zEJp2c.fXeq6gXe5DLJj.dZz.GO0Vuj1Q5jdpITGzyo3GG
- *         address: 123 Main St
- *         phoneNumber: 123456789
+ *         fullName: Nguyễn Văn A
+ *         email: user@example.com
+ *         password: hashed_password_here
+ *         address: 123 Đường ABC, Hà Nội
+ *         phoneNumber: "0123456789"
  *         role: user
  *         firstLogin: false
  */
@@ -55,7 +58,7 @@ const passport = require('../config/passport');
  * @swagger
  * /api/auth/register:
  *   post:
- *     summary: Register a new user
+ *     summary: Đăng ký tài khoản mới
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -65,34 +68,29 @@ const passport = require('../config/passport');
  *             type: object
  *             required:
  *               - email
- *               - companyName
- *               - fullNamefull
+ *               - fullName
  *               - password
  *               - address
  *               - phoneNumber
  *             properties:
  *               fullName:
  *                 type: string
- *                 description: The fullname of the user
+ *                 description: Họ tên người dùng
  *               companyName:
  *                 type: string
- *                 description: The companyname of the user
+ *                 description: Tên công ty (chỉ áp dụng với nhà tuyển dụng)
  *               email:
  *                 type: string
  *                 format: email
- *                 description: The email of the user
  *               password:
  *                 type: string
- *                 description: The password of the user
  *               address:
  *                 type: string
- *                 description: The address of the user
  *               phoneNumber:
  *                 type: string
- *                 description: The phone number of the user
  *     responses:
  *       201:
- *         description: User registered successfully
+ *         description: Đăng ký thành công
  *         content:
  *           application/json:
  *             schema:
@@ -100,19 +98,20 @@ const passport = require('../config/passport');
  *               properties:
  *                 message:
  *                   type: string
- *                   description: Success message
  *                 user:
  *                   $ref: '#/components/schemas/User'
  *       400:
- *         description: Validation error or user already exists
+ *         description: Dữ liệu không hợp lệ hoặc email đã tồn tại
  *       500:
- *         description: Server error
+ *         description: Lỗi máy chủ
  */
+router.post('/register', AuthController.register);
+
 /**
  * @swagger
  * /api/auth/login:
  *   post:
- *     summary: User login
+ *     summary: Đăng nhập tài khoản
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -126,16 +125,16 @@ const passport = require('../config/passport');
  *             properties:
  *               email:
  *                 type: string
- *                 description: The username or email of the user
+ *                 description: Email
  *               password:
  *                 type: string
- *                 description: The password of the user
+ *                 description: Mật khẩu
  *             example:
- *               email: johndoe@example.com
+ *               email: user@example.com
  *               password: strongpassword123
  *     responses:
  *       200:
- *         description: User logged in successfully
+ *         description: Đăng nhập thành công
  *         content:
  *           application/json:
  *             schema:
@@ -143,38 +142,21 @@ const passport = require('../config/passport');
  *               properties:
  *                 token:
  *                   type: string
- *                   description: JWT token for authentication
+ *                   description: JWT token
  *                 data:
  *                   $ref: '#/components/schemas/User'
  *       400:
- *         description: Invalid username/email or password
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   description: Error message
+ *         description: Sai email hoặc mật khẩu
  *       500:
- *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   description: Error message
+ *         description: Lỗi máy chủ
  */
-
-router.post('/register', AuthController.register);
 router.post('/login', AuthController.login);
+
 /**
  * @swagger
  * /api/auth/verify-email:
  *   get:
- *     summary: Verify user email
+ *     summary: Xác thực email người dùng
  *     tags: [Auth]
  *     parameters:
  *       - in: query
@@ -182,10 +164,10 @@ router.post('/login', AuthController.login);
  *         required: true
  *         schema:
  *           type: string
- *         description: Verification token
+ *         description: Mã token xác thực email
  *     responses:
  *       200:
- *         description: User email verified successfully
+ *         description: Xác thực email thành công
  *         content:
  *           application/json:
  *             schema:
@@ -193,45 +175,24 @@ router.post('/login', AuthController.login);
  *               properties:
  *                 message:
  *                   type: string
- *                   description: Success message
  *                 error_code:
  *                   type: number
- *                   description: Error code
  *                   example: 0
  *       400:
- *         description: Invalid or expired verification token
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   description: Error message
+ *         description: Token không hợp lệ hoặc đã hết hạn
  */
 router.get('/verify-email', AuthController.verifyEmail);
-
-
 
 /**
  * @swagger
  * /api/auth/google:
  *   get:
- *     summary: Google OAuth2 login
+ *     summary: Đăng nhập bằng Google OAuth2
  *     tags: [Auth]
  *     responses:
  *       302:
- *         description: Redirects to Google OAuth2 login page
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   description: Success message
+ *         description: Chuyển hướng đến trang đăng nhập Google
  */
-
 router.get('/google',
     passport.authenticate('google', { scope: ['profile', 'email'] })
 );
@@ -240,11 +201,11 @@ router.get('/google',
  * @swagger
  * /api/auth/google/callback:
  *   get:
- *     summary: Google OAuth2 callback
+ *     summary: Callback đăng nhập Google
  *     tags: [Auth]
  *     responses:
  *       200:
- *         description: User logged in successfully
+ *         description: Đăng nhập Google thành công
  *         content:
  *           application/json:
  *             schema:
@@ -252,20 +213,16 @@ router.get('/google',
  *               properties:
  *                 message:
  *                   type: string
- *                   description: Success message
  *                 token:
  *                   type: string
- *                   description: JWT token for authentication
  */
 router.get(
     '/google/callback',
     passport.authenticate('google', { session: false }),
     (req, res) => {
-        const {  token } = req.user;
-
-        res.json({ message: 'Login successful',  token });
+        const { token } = req.user;
+        res.json({ message: 'Login successful', token });
     }
 );
-
 
 module.exports = router;
