@@ -88,7 +88,8 @@
         });
       });
 
-      app.listen(port, async () => {
+      app.listen(process.env.PORT || port
+        , async () => {
         try {
             console.log('Đang kết nối đến cơ sở dữ liệu...');
             await sequelize.sync();
