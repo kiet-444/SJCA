@@ -88,12 +88,15 @@
         });
       });
 
-    app.listen(port, async  () => {
+      app.listen(port, async () => {
         try {
+            console.log('Đang kết nối đến cơ sở dữ liệu...');
             await sequelize.sync();
-            console.log(`Server listening on port ${port}`);
+            console.log(`Đã kết nối và đồng bộ cơ sở dữ liệu!`);
+            console.log(`Server đang lắng nghe trên cổng ${port}`);
         } catch (error) {
-            console.error('Error starting the server:', error);
+            console.error('Lỗi khi khởi động server hoặc kết nối đến CSDL:', error);
         }
     });
+    
 
