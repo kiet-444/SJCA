@@ -27,7 +27,7 @@
     app.use(express.json());
 
     const port = process.env.PORT || 3000;
-    // const YOUR_DOMAIN = process.env.DOMAIN || 'http://localhost:3000';
+    const YOUR_DOMAIN = process.env.DOMAIN || 'http://localhost:3000';
 
 
     app.use(bodyParser.urlencoded({ extended: true }));
