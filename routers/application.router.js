@@ -4,8 +4,6 @@ const ApplicationManagementController = require('../controllers/ApplicationManag
 const { verifyToken, isEmployer, isAdmin, isWorker } = require('../middleware/auth.middleware');
 
 
-// employer
-// Lấy danh sách ứng viên cho công việc
 /**
  * @swagger
  * /applications/job/{jobPostingId}:
@@ -14,11 +12,11 @@ const { verifyToken, isEmployer, isAdmin, isWorker } = require('../middleware/au
  *     tags: [Application]
  *     parameters:
  *       - in: path
- *         name: jobId
+ *         name: jobPostingId
  *         required: true
  *         schema:
  *           type: string
- *         description: ID cơ vị cơ bản
+ *         description: ID công việc
  *     responses:
  *       200:
  *         description: Danh sách ứng viên cho công việc
@@ -34,7 +32,7 @@ const { verifyToken, isEmployer, isAdmin, isWorker } = require('../middleware/au
  *                   items:
  *                     $ref: '#/components/schemas/Application'
  *       404:
- *         description: Công việc không tốn tại
+ *         description: Công việc không tồn tại
  *       500:
  *         description: Đã xảy ra lỗi
  *     security:
@@ -42,7 +40,7 @@ const { verifyToken, isEmployer, isAdmin, isWorker } = require('../middleware/au
  */
 router.get('/job/:jobPostingId', verifyToken, isEmployer, ApplicationManagementController.getApplicationsForJob);
 
-// Cập nhật trạng thái ứng tuyển
+
 /**
  * @swagger
  * /applications/{applicationId}/status:
@@ -69,7 +67,7 @@ router.get('/job/:jobPostingId', verifyToken, isEmployer, ApplicationManagementC
  *                 description: Trạng thái ứng tuyển
  *     responses:
  *       200:
- *         description: Trạng thái ứng tuyển cơ vị cơ bản
+ *         description: Cập nhật trạng thái thành công
  *         content:
  *           application/json:
  *             schema:
@@ -80,9 +78,9 @@ router.get('/job/:jobPostingId', verifyToken, isEmployer, ApplicationManagementC
  *                 data:
  *                   $ref: '#/components/schemas/Application'
  *       400:
- *         description: Trạng thái ứng tuyển khó hợp lệ
+ *         description: Trạng thái ứng tuyển không hợp lệ
  *       404:
- *         description: ứng tuyển không tốn tại
+ *         description: Ứng tuyển không tồn tại
  *       500:
  *         description: Đã xảy ra lỗi
  *     security:
@@ -91,14 +89,13 @@ router.get('/job/:jobPostingId', verifyToken, isEmployer, ApplicationManagementC
 router.put('/:applicationId/status', verifyToken, isEmployer, ApplicationManagementController.updateApplicationStatus);
 
 
-
-//worker
+// ====================== WORKER ======================
 
 /**
  * @swagger
  * /applications/user:
  *   get:
- *     summary: Lấy danh sách ứng tuyển theo người dùng
+ *     summary: Lấy danh sách ứng tuyển của người dùng
  *     tags: [Application]
  *     responses:
  *       200:
@@ -119,8 +116,6 @@ router.put('/:applicationId/status', verifyToken, isEmployer, ApplicationManagem
  *     security:
  *       - bearerAuth: []
  */
-
-router.get('/applications/user', verifyToken, isWorker, ApplicationManagementController.getApplicationsByUserId);
-
+router.get('/user', verifyToken, isWorker, ApplicationManagementController.getApplicationsByUserId);
 
 module.exports = router;

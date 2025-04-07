@@ -3,6 +3,50 @@ const router = express.Router();
 const ComplaintController = require('../controllers/Complaint.controller');
 const { verifyToken, isWorkerOrEmployer } = require('../middleware/auth.middleware');
 
+/**
+ * @swagger
+ * tags:
+ *   name: Complaint
+ *   description: Complaint management
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Complaint:
+ *       type: object
+ *       required:
+ *         - title
+ *         - description
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: Auto-generated ID of the complaint
+ *         title:
+ *           type: string
+ *           description: Title of the complaint
+ *         description:
+ *           type: string
+ *           description: Description of the complaint
+ *         status:
+ *           type: string
+ *           enum: [pending, resolved, rejected]
+ *           default: pending
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *       example:
+ *         id: "6612fb2f9d2a7d3cc42e9b20"
+ *         title: "Payment delay"
+ *         description: "The employer has not released payment after job completion."
+ *         status: "pending"
+ *         createdAt: "2025-04-06T12:34:56Z"
+ *         updatedAt: "2025-04-06T12:34:56Z"
+ */
 
 /**
  * @swagger
@@ -25,11 +69,10 @@ const { verifyToken, isWorkerOrEmployer } = require('../middleware/auth.middlewa
  *               $ref: '#/components/schemas/Complaint'
  *       500:
  *         description: Failed to create complaint
-*     security:
+ *     security:
  *       - bearerAuth: []
  */
-router.post('/complaint', verifyToken, ComplaintController.createComplaintRecord);
-
+router.post('/', verifyToken, ComplaintController.createComplaintRecord);
 
 /**
  * @swagger
@@ -52,7 +95,6 @@ router.post('/complaint', verifyToken, ComplaintController.createComplaintRecord
  *       - bearerAuth: []
  */
 router.get('/', verifyToken, isWorkerOrEmployer, ComplaintController.getAllComplaintRecords);
-
 
 /**
  * @swagger
@@ -82,7 +124,6 @@ router.get('/', verifyToken, isWorkerOrEmployer, ComplaintController.getAllCompl
  *       - bearerAuth: []
  */
 router.get('/:id', verifyToken, ComplaintController.getComplaintRecordById);
-
 
 /**
  * @swagger
@@ -117,8 +158,7 @@ router.get('/:id', verifyToken, ComplaintController.getComplaintRecordById);
  *     security:
  *       - bearerAuth: []
  */
-router.put('/:id', verifyToken, ComplaintController.updateComplaintRecord);   
-
+router.put('/:id', verifyToken, ComplaintController.updateComplaintRecord);
 
 /**
  * @swagger
