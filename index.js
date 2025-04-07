@@ -51,35 +51,43 @@
     app.use('/api/reviews', ReviewRouter);
     app.use('/api/payment', PaymentRouter);
 
-    // app.post('/api/webhook/payos', async (req, res) => {
-    //     const JobGroup = require('./models/JobGroup');
+    app.post('/api/webhook/payos', async (req, res) => {
+        const JobGroup = require('./models/JobGroup');
     
-    //     try {
-    //         const data = req.body;
-    //         console.log('Webhook data received:', data); // Log dữ liệu webhook
+        try {
+            const data = req.body;
+            console.log('Webhook data received:', data); // Log dữ liệu webhook
     
-    //         const jobGroupId = data.orderCode || data.extraData?.jobGroupId;
+            const jobGroupId = data.orderCode || data.extraData?.jobGroupId;
     
-    //         if (!jobGroupId) {
-    //             return res.status(400).json({ message: 'Thiếu jobGroupId trong webhook' });
-    //         }
+            if (!jobGroupId) {
+                return res.status(400).json({ message: 'Thiếu jobGroupId trong webhook' });
+            }
     
-    //         if (data.status === 'SUCCESS') {
-    //             await JobGroup.update({ is_paid: true }, { where: { id: jobGroupId } });
-    //             console.log(` Đã xác nhận thanh toán cho JobGroup ID: ${jobGroupId}`);
-    //         }
+            if (data.status === 'SUCCESS') {
+                await JobGroup.update({ is_paid: true }, { where: { id: jobGroupId } });
+                console.log(` Đã xác nhận thanh toán cho JobGroup ID: ${jobGroupId}`);
+            }
     
-    //         res.status(200).json({ message: 'Webhook xử lý thành công' });
-    //     } catch (error) {
-    //         console.error(' Lỗi xử lý webhook PayOS:', error);
-    //         res.status(500).json({ message: 'Webhook xử lý thất bại' });
-    //     }
-    // });
+            res.status(200).json({ message: 'Webhook xử lý thành công' });
+        } catch (error) {
+            console.error(' Lỗi xử lý webhook PayOS:', error);
+            res.status(500).json({ message: 'Webhook xử lý thất bại' });
+        }
+    });
 
     app.get('/', (req, res) => {
         res.send('Chào mừng đến với ứng dụng của bạn!');
     });
     
+    app.use((err, req, res, next) => {
+        console.error('Unhandled error:', err.stack); // logs full error stack to console
+        res.status(500).json({
+          status: 'error',
+          message: err.message || 'Internal Server Error'
+        });
+      });
+      
     app.listen(port, async  () => {
         try {
             await sequelize.sync();
