@@ -45,12 +45,4 @@ const isSupportStaff = (req, res, next) => {
     next();
 };
 
-app.use((err, req, res, next) => {
-    console.error('Unhandled error:', err.stack); // logs full error stack to console
-    res.status(500).json({
-      status: 'error',
-      message: err.message || 'Internal Server Error'
-    });
-  });
-
 module.exports = { verifyToken, isWorkerOrEmployer, isWorker, isEmployer , isAdmin, isSupportStaff };
