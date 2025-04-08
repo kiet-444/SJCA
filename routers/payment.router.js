@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const PaymentController = require("../controllers/Payment.controller");
+const { verifyToken } = require("../middleware/auth.middleware");
 
 
 /**
@@ -25,7 +26,7 @@ const PaymentController = require("../controllers/Payment.controller");
  *       500:
  *         description: Đã xảy ra lỗi
  */
-router.post("/create", PaymentController.createPayment);
+router.post("/create", verifyToken, PaymentController.createPayment);
 
 /**
  * @swagger
@@ -73,6 +74,6 @@ router.post("/callback", PaymentController.paymentCallback);
  *       500:
  *         description: Đã xảy ra lỗi
  */
-router.post("/release", PaymentController.releasePayment);
+router.post("/release", verifyToken, PaymentController.releasePayment);
 
 module.exports = router;
