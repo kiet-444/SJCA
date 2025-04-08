@@ -76,6 +76,24 @@ const getAllJobGroupsByUserId = async (req, res) => {
     }
 };
 
+const getJobGroupById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const jobGroup = await JobGroup.findByPk(id);
+
+
+        if (!jobGroup) {
+            return res.status(404).json({ message: 'JobGroup not found' });
+        }
+
+
+        const totalJobPosting = await JobPosting.count({ where: { jobGroupId: id } });
+       
+        res.status(200).json({ data: { ...jobGroup.dataValues, totalJobPosting } });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to get job group', error });
+    }
+}
 
 
 const creatJobGroup = async (req, res) => {
@@ -157,4 +175,4 @@ const updateStatusJobGroup = async (req, res) => {
 
 
 
-module.exports = { creatJobGroup, updateStatusJobGroup, getAllJobGroups, getAllJobGroupsByUserId };
+module.exports = { creatJobGroup, updateStatusJobGroup, getAllJobGroups, getAllJobGroupsByUserId, getJobGroupById };
