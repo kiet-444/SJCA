@@ -98,6 +98,32 @@ router.get('/', verifyToken, isEmployer, JobGroupController.getAllJobGroupsByUse
 
 /**
  * @swagger
+ * /api/jobGroups/{id}:
+ *   get:
+ *     summary: Lấy JobGroup theo ID
+ *     tags: [JobGroup]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID JobGroup
+ *     responses:
+ *       200:
+ *         description: Thống tin JobGroup
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/JobGroup'
+ *       404:
+ *         description: JobGroup không tìm thấy
+ *       500:
+ *         description: Đã xảy ra lỗi
+ */
+router.get('/:id', JobGroupController.getJobGroupById);
+/**
+ * @swagger
  * /api/jobGroups:
  *   post:
  *     summary: Tạo JobGroup
