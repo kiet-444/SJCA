@@ -71,22 +71,20 @@ const paymentCallback = async (req, res) => {
     try {
         const { data } = req.body;
 
-if (data.code === '00') {
-    const orderCode = String(data.orderCode); 
-    const escrowWallet = await EscrowWallet.findOne({
-        where: { orderCode }
-    });
+    if (data.code === '00') {
+        const orderCode = String(data.orderCode);  // ép chuỗichuỗi
+        const escrowWallet = await EscrowWallet.findOne({
+            where: { orderCode }
+        });
 
-    if (escrowWallet) {
-        await escrowWallet.update({
+        if (escrowWallet) {
+            await escrowWallet.update({
             balance: parseFloat(escrowWallet.balance) + parseFloat(data.amount) //ep kieu balance
         });
         
-
         const jobGroup = await JobGroup.findOne({
             where: { id: escrowWallet.jobGroupId, userId: escrowWallet.userId }
         });
-        
 
         if (jobGroup) {
             await jobGroup.update({

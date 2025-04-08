@@ -156,7 +156,7 @@ const CVManagementController = {
             const newApplication = await Application.create({
                 jobPostingId,
                 cvId,
-                status: 'pending',
+                status: 'submitted ',
             });
 
             return res.status(201).json({
