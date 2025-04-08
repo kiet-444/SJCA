@@ -46,6 +46,36 @@ const getAllJobGroups = async (req, res) => {
     }
 };
 
+const getAllJobGroupsByUserId = async (req, res) => {
+    try {
+        const userId = req.userId;
+        // Lấy danh sách jobGroups theo điều kiện lọc (hoặc lấy tất cả nếu không có query)
+        const jobGroups = await JobGroup.findAll({
+            where: {
+                userId
+            },
+            order: [['createdAt', 'DESC']],
+        });
+
+
+        const jobGroupsWithTotalJobPostings = await Promise.all(jobGroups.map(async (jobGroup) => {
+            const totalJobPostings = await JobPosting.count({
+                where: { jobGroupId: jobGroup.id },
+            });
+            const newJobGroup = {
+                ...jobGroup.dataValues,
+                totalJobPostings
+            }
+            return newJobGroup;
+        }));
+
+
+        res.status(200).json({ data: jobGroupsWithTotalJobPostings });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to get job groups', error });
+    }
+};
+
 
 
 const creatJobGroup = async (req, res) => {
@@ -97,7 +127,7 @@ const updateStatusJobGroup = async (req, res) => {
 
         // Nếu chuyển sang "active", phải kiểm tra đã thanh toán + có job
         if (status === "active") {
-            if (!jobGroup.is_paid) {
+            if (!jobGroup.isPaid) {
                 return res.status(400).json({ message: "JobGroup is not payment" });
             }
 
@@ -127,4 +157,4 @@ const updateStatusJobGroup = async (req, res) => {
 
 
 
-module.exports = { creatJobGroup, updateStatusJobGroup, getAllJobGroups};
+module.exports = { creatJobGroup, updateStatusJobGroup, getAllJobGroups, getAllJobGroupsByUserId };

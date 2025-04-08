@@ -72,7 +72,29 @@ const { verifyToken, isEmployer } = require('../middleware/auth.middleware');
 
 router.get('/jobGroups', JobGroupController.getAllJobGroups);
 
-
+/**
+ * @swagger
+ * /api/jobGroups/:
+ *   get:
+ *     summary: Lấy danh sách Job Groups theo Employer
+ *     tags: [JobGroup]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Danh sách Job Groups của employer
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/JobGroup'
+ *       401:
+ *         description: Không có quyền truy cập
+ *       500:
+ *         description: Lỗi server
+ */
+router.get('/', verifyToken, isEmployer, JobGroupController.getAllJobGroupsByUserId);
 
 /**
  * @swagger
