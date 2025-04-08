@@ -114,6 +114,40 @@ router.get('/', JobManagement.getAllJobs);
 
 /**
  * @swagger
+ * /jobs/job-groups/{jobGroupId}:
+ *   get:
+ *     summary: Lấy danh sách công việc theo Job Group ID
+ *     tags: [Job]
+ *     parameters:
+ *       - in: path
+ *         name: jobGroupId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của Job Group
+ *     responses:
+ *       200:
+ *         description: Danh sách công việc thuộc Job Group
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Job'
+ *       404:
+ *         description: Không tìm thấy Job Group
+ *       500:
+ *         description: Đã xảy ra lỗi
+ */
+router.get('/job-groups/:jobGroupId', JobManagement.getJobByJobGroupId);
+
+/**
+ * @swagger
  * /jobs/{id}:
  *   get:
  *     summary: Lấy thông tin công việc theo ID

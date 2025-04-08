@@ -105,6 +105,33 @@ const getJobPostings = async (req, res) => {
     }
 };
 
+const getJobByJobGroupId = async (req,res) => {
+    try {
+        const { jobGroupId } = req.params;
+        const jobs = await JobPosting.findAll({
+            where: {jobGroupId},
+            include: [
+                {
+                    model: JobType
+                }
+            ]
+        });
+        if (jobs.length === 0) {
+            return res.status(404).json({ message: 'Cannot find job posting.' });
+        }
+
+
+        return res.status(200).json({
+            message: 'Find job posting successfully.',
+            data: jobs,
+        });
+    } catch (error) {
+        console.error('Error when get job posting', error);
+        return res.status(500).json({ message: 'Error when get job posting' });
+    }
+}
+
+
 
 const getAllJobs = async (req, res) => { //lấy all job theo job group theo id cua job group
     try {
@@ -144,6 +171,6 @@ const getJobById = async (req,res) => {
     }
 }
 
-module.exports = {createJobType, createJob, getAllJobs, getJobById, getJobPostings}
+module.exports = {createJobType, createJob, getAllJobs, getJobById, getJobPostings, getJobByJobGroupId};
 
 

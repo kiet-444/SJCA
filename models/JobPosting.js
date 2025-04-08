@@ -41,7 +41,7 @@ const JobPosting = sequelize.define('JobPosting', {
     status: {
         type: DataTypes.STRING,
         allowNull: false,
-        defaultValue: 'completed',
+        defaultValue: 'incompleted',
         validate: {
             isIn: [['completed', 'incompleted']],
         },

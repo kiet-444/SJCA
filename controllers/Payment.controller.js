@@ -1,6 +1,7 @@
 const dotenv = require('dotenv');
 const User = require('../models/User');
 const EscrowWallet = require('../models/EscrowWallet');
+const JobGroup = require('../models/JobGroup');
 const JobPosting = require('../models/JobPosting');
 const JobExecute = require('../models/JobExecute');
 const PayOS = require('@payos/node');
@@ -24,7 +25,6 @@ const createPayment = async (req, res) => {
             return res.status(404).json({ success: false, message: "JobGroup không tồn tại hoặc không thuộc người dùng" });
         }
 
-        const totalAmount = await calculateJobGroupTotal(jobGroupId);
         const calculateJobGroupTotal = async (jobGroupId) => {
             const jobPostings = await JobPosting.findAll({
                 where: { jobGroupId },
@@ -32,26 +32,30 @@ const createPayment = async (req, res) => {
         
             let total = 0;
             for (const job of jobPostings) {
-                total += job.salary || 0;
+                const number_of_person = job.number_of_person || 1; // fallback nếu không có field
+                total += (job.salary || 0) * number_of_person;
             }
         
             return total;
         };
+
+        const totalAmount = await calculateJobGroupTotal(jobGroupId);
         
 
         const exitEscrowWallet = await EscrowWallet.findOne({ where: { userId } });
         if (exitEscrowWallet) {
-            await exitEscrowWallet.update({ orderCode: orderId });
+            await exitEscrowWallet.update({ orderCode: orderId, jobGroupId });
         } else {
-            await EscrowWallet.create({ userId, balance: 0, orderCode: orderId });
+            await EscrowWallet.create({ userId, jobGroupId, balance: 0, orderCode: orderId });
         }
+        
         
         const response = {
             amount: totalAmount,
             orderCode: orderId,
             description: "Thanh toán JobGroup",
-            returnUrl: "https://your-platform.com/payment-success",
-            cancelUrl: "https://your-platform.com/payment-fail",
+            returnUrl: " https://seasonal-job.vercel.app/employer/employer-job-groups",
+            cancelUrl: " https://seasonal-job.vercel.app/employer/employer-job-groups",
         };
 
         const paymentLink = await payos.createPaymentLink(response);
@@ -66,19 +70,33 @@ const createPayment = async (req, res) => {
 const paymentCallback = async (req, res) => {
     try {
         const { data } = req.body;
-        if (data.code === '00') {
-            const escrowWallet = await EscrowWallet.findOne({ where: { orderCode: data.orderCode } });
-            if (escrowWallet) {
-                await escrowWallet.update({ balance: escrowWallet.balance + data.amount });
 
-                // Tìm JobGroup dựa vào orderCode, bạn cần lưu orderCode kèm jobGroupId nếu chưa có
-                const jobGroup = await JobGroup.findOne({ where: { userId: escrowWallet.userId } }); // hoặc thêm mapping table giữa JobGroup - orderCode
+if (data.code === '00') {
+    const orderCode = String(data.orderCode); 
+    const escrowWallet = await EscrowWallet.findOne({
+        where: { orderCode }
+    });
 
-                if (jobGroup) {
-                    await jobGroup.update({ isPaid: true, status: 'inactive' });
-                }
-            }
+    if (escrowWallet) {
+        await escrowWallet.update({
+            balance: parseFloat(escrowWallet.balance) + parseFloat(data.amount) //ep kieu balance
+        });
+        
+
+        const jobGroup = await JobGroup.findOne({
+            where: { id: escrowWallet.jobGroupId, userId: escrowWallet.userId }
+        });
+        
+
+        if (jobGroup) {
+            await jobGroup.update({
+                isPaid: true,
+                status: 'inactive'
+            });
         }
+    }
+}
+
 
         res.status(200).send("OK");
     } catch (error) {

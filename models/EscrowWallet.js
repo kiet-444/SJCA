@@ -4,7 +4,7 @@ const sequelize = require('../config/db');
 const EscrowWallet = sequelize.define('EscrowWallet', {
     jobGroupId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
         references: {
             model: 'JobGroup',
             key: 'id',
