@@ -62,6 +62,29 @@ router.get('/job-execute/daily/:userId', verifyToken,  JobExecuteController.getD
 
 /**
  * @swagger
+ * /job-execute/job-posting/{jobPostingId}:
+ *   get:
+ *     summary: Get job executions by jobPostingId
+ *     tags: [Job Execute]
+ *     parameters:
+ *       - in: path
+ *         name: jobPostingId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Job executions retrieved successfully
+ *       404:
+ *         description: Job execution not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/job-execute/job-posting/:jobPostingId', verifyToken, JobExecuteController.getJobExecuteByJobPostingId);
+
+
+/**
+ * @swagger
  * /job-execute/{id}:
  *   patch:
  *     summary: Update a job execution

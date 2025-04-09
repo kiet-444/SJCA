@@ -37,6 +37,32 @@ const JobExecuteController = {
         }
     },
 
+    async getJobExecuteByJobPostingId(req, res) {
+        try {
+            const userId = req.userId;
+            const { jobPostingId } = req.params;
+
+            if (!jobPostingId){
+                return res.status(400).json({ message: 'JobPostingId is required' });
+            }
+
+            const jobExecutes = await JobExecute.findAll({
+                where: {
+                    jobPostingId,
+                    userId
+                }
+            });
+            
+            if(!jobExecutes || jobExecutes.length === 0) {
+                return res.status(404).json({ message: 'Job execute not found' });
+            } 
+            res.status(200).json({ message: 'Get Job Execute successfully', data: jobExecutes });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    },
+
+
     async updateJobExecute(req, res) {
         try {
             const { id } = req.params;
