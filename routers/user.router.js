@@ -153,33 +153,6 @@ router.get('/all', verifyToken, isAdmin , UserController.getAllUsers);
  */
 router.get('/totalAccounts', verifyToken, isAdmin, UserController.getTotalAccounts);
 
-// Get user by ID 
-/**
- * @swagger
- * /api/user/{id}:
- *   get:
- *     summary: Get a user by ID
- *     tags: [User]
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *         description: The ID of the user to retrieve
- *     responses:
- *       200:
- *         description: User details
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/User'
- *       404:
- *         description: User not found
- *       500:
- *         description: Failed to retrieve user
- */
-router.get('/:id', verifyToken, isWorkerOrEmployer, UserController.getUserByPkId);
 
 /**
  * @swagger
@@ -242,6 +215,34 @@ router.get('/companies', UserController.getListCompany);
  *         description: Failed to retrieve companies
  */
 router.get('/companies/maxRating', UserController.getCompanyByRating);
+
+// Get user by ID 
+/**
+ * @swagger
+ * /api/user/{id}:
+ *   get:
+ *     summary: Get a user by ID
+ *     tags: [User]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the user to retrieve
+ *     responses:
+ *       200:
+ *         description: User details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Failed to retrieve user
+ */
+router.get('/:id(\\d+)', verifyToken, isWorkerOrEmployer, UserController.getUserByPkId);
 
 
 module.exports = router;
