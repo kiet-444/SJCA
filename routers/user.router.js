@@ -242,7 +242,7 @@ router.get('/companies/maxRating', UserController.getCompanyByRating);
  *       500:
  *         description: Failed to retrieve user
  */
-router.get('/:id(\\d+)', verifyToken, isWorkerOrEmployer, UserController.getUserByPkId);
+router.get('/:id', verifyToken, isWorkerOrEmployer, UserController.getUserByPkId);
 
 
 module.exports = router;
