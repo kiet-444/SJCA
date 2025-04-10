@@ -68,6 +68,29 @@ const { verifyToken, isEmployer, isWorkerOrEmployer } = require('../middleware/a
 
 /**
  * @swagger
+ *  /jobs/jobPostingsIsPaid:
+ *    get:
+ *      summary: Lấy danh sách cong viec cơ bản
+ *      tags: [Job]
+ *      responses:
+ *        200:
+ *          description: Danh sách cong viec cơ bản
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  message:
+ *                    type: string
+ *                  data:
+ *                    type: array
+ *                    items:
+ *                      $ref: '#/components/schemas/Job'
+ * */
+router.get('/jobPostingsIsPaid', JobManagement.getJobPostingsByJobGroupsIsPaid);
+
+/**
+ * @swagger
  * /jobs:
  *   get:
  *     summary: Lấy danh sách cong viec cơ bản
