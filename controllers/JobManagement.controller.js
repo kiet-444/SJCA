@@ -171,6 +171,28 @@ const getJobById = async (req,res) => {
     }
 }
 
-module.exports = {createJobType, createJob, getAllJobs, getJobById, getJobPostings, getJobByJobGroupId};
+const getJobPostingsByJobGroupsIsPaid = async (req, res) => {
+    try {
+        const jobGroups = await JobGroup.findAll({
+            where: {
+                isPaid: true
+            },
+            attributes: ['id']
+        })
+
+
+        const jobPostings = await JobPosting.findAll({
+            where: {
+                jobGroupId: jobGroups.map(jobGroup => jobGroup.id)
+            }
+        })
+        res.status(200).json({ data: jobPostings });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+
+module.exports = {createJobType, createJob, getAllJobs, getJobById, getJobPostings, getJobByJobGroupId, getJobPostingsByJobGroupsIsPaid};
 
 
