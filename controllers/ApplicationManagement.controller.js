@@ -26,7 +26,7 @@ const ApplicationManagementController = {
                         include: [
                             {
                                 model: User,
-                                attributes: ['id', 'name'],
+                                attributes: ['id', 'fullName', 'email'],
                             }
                         ]
                     },

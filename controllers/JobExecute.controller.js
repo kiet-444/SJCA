@@ -56,6 +56,7 @@ const JobExecuteController = {
             if(!jobExecutes || jobExecutes.length === 0) {
                 return res.status(404).json({ message: 'Job execute not found' });
             } 
+
             res.status(200).json({ message: 'Get Job Execute successfully', data: jobExecutes });
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -79,7 +80,23 @@ const JobExecuteController = {
             console.error('Error updating job execute:', error);
             res.status(500).json({ error: error.message });
         }
+    },
+
+    async deleteJobExecute(req, res) {
+        try {
+            const { id } = req.params;
+            await JobExecute.destroy({
+                where: {
+                    id
+                }
+            });
+            res.status(200).json({ message: 'Delete Job execute successfully'});
+        } catch (error) {
+            console.error('Error deleting job execute:', error);
+            res.status(500).json({ error: error.message });
+        }
     }
+
 };
 
 module.exports = JobExecuteController;
