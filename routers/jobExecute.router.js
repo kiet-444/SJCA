@@ -122,4 +122,27 @@ router.get('/job-execute/job-posting/:jobPostingId', verifyToken, JobExecuteCont
  */
 router.patch('/job-execute/:id', verifyToken, isEmployer, JobExecuteController.updateJobExecute);
 
+
+/**
+ * @swagger
+ *  /job-execute/{id}:
+ *   delete:
+ *     summary: Delete a job execution
+ *     tags: [Job Execute]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Job execute deleted successfully
+ *       404:
+ *         description: Job execute not found
+ *       500:
+ *         description: Internal server error
+ */
+router.delete('/job-execute/:id', verifyToken, isEmployer, JobExecuteController.deleteJobExecute);
+
 module.exports = router;
