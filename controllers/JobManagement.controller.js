@@ -1,4 +1,4 @@
-const { JobType, JobPosting} = require('../models');
+const { JobType, JobPosting, JobGroup } = require('../models');
 
 const createJobType = async ( req, res) => {
     try {
