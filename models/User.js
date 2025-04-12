@@ -34,6 +34,10 @@ const User = sequelize.define('User', {
     allowNull: true,
     unique: true,
   },
+  avatar: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
   isVerified: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,

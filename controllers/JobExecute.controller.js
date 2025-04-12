@@ -4,9 +4,10 @@ const { Op } = require('sequelize');
 const JobExecuteController = {
     async createJobExecute(req, res) {
         try {
-            const { jobPostingId, userId, assigned_at, checkin_at, checkout_at, status, note, work_process } = req.body;
+            const { jobPostingId, userId, assigned_at, checkin_at, checkout_at, status, note, processComplete,
+                   reason ,  } = req.body;
             
-            const jobExecute = await JobExecute.create({ jobPostingId, userId, assigned_at, checkin_at, checkout_at, status, note, work_process });
+            const jobExecute = await JobExecute.create({ jobPostingId, userId, assigned_at, checkin_at, checkout_at, status, note, processComplete, reason });
             res.status(201).json({ message: 'Job execute sent successfully', jobExecute });
         } catch (error) {
             console.error('Error sending job execute:', error);
@@ -74,7 +75,7 @@ const JobExecuteController = {
                 return res.status(404).json({ message: 'Job execute not found' });
             }
     
-            // Nếu có file upload
+            // upload img
             if (req.files && req.files.length > 0) {
                 const file = req.files[0];
                 const { buffer, mimetype } = file;
