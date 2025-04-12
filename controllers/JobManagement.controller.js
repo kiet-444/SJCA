@@ -192,7 +192,38 @@ const getJobPostingsByJobGroupsIsPaid = async (req, res) => {
     }
 }
 
+const getJobTypeById = async (req, res) => {
+    try {
+        const { id } = req.params;
 
-module.exports = {createJobType, createJob, getAllJobs, getJobById, getJobPostings, getJobByJobGroupId, getJobPostingsByJobGroupsIsPaid};
+
+        // Validate if the id is provided and is a valid number
+        if (!id || isNaN(id)) {
+            return res.status(400).json({ message: 'Invalid or missing job type ID.' });
+        }
+
+
+        const jobType = await JobType.findOne({
+            where: { id: parseInt(id, 10) }
+        });
+
+
+        if (!jobType) {
+            return res.status(404).json({ message: 'Job type not found.' });
+        }
+
+
+        return res.status(200).json({
+            message: 'Job type information retrieved successfully.',
+            data: jobType.toJSON(),
+        });
+    } catch (error) {
+        console.error('Error retrieving job type information:', error);
+        return res.status(500).json({ message: 'An error occurred while retrieving job type information.' });
+    }
+};
+
+
+module.exports = {createJobType, createJob, getAllJobs, getJobById, getJobPostings, getJobByJobGroupId, getJobPostingsByJobGroupsIsPaid , getJobTypeById};
 
 

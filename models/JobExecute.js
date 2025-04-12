@@ -18,6 +18,15 @@ const JobExecute = sequelize.define('JobExecute', {
             key: 'id',
         },
     },
+    reason: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    processComplete: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+    },
     assigned_at: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -37,6 +46,14 @@ const JobExecute = sequelize.define('JobExecute', {
         validate: {
             isIn: [['success', 'active', 'failed']],
         },
+    },
+    image: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    reason: {
+        type: DataTypes.STRING,
+        allowNull: true,
     },
     note: {
         type: DataTypes.STRING,

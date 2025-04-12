@@ -1,6 +1,7 @@
 const { Op } = require('sequelize');
 const JobGroup = require('../models/JobGroup');
 const JobPosting = require('../models/JobPosting');
+const JobExecute = require('../models/JobExecute');
 
 
 const getAllJobGroups = async (req, res) => {
@@ -161,6 +162,34 @@ const updateStatusJobGroup = async (req, res) => {
             const totalAmount = jobPostings.reduce((sum, job) => sum + job.salary, 0);
             if (totalAmount <= 0) {
                 return res.status(400).json({ message: "No valid salary in JobGroup" });
+            }
+        }
+
+        if (status === "active") {
+            const jobPostings = await JobPosting.findAll({ where: { jobGroupId: id } });
+            
+            for (const job of jobPostings) {
+                if (!job.workerId) {
+                    console.warn(`JobPosting ${job.id} has no worker assigned`);
+                    continue;
+                }
+
+                const existExecute = await JobExecute.findOne({
+                    where: { jobPostingId: job.id, workerId: job.workerId },
+                });
+                if (!existExecute) {
+                    await job.createJobExecute({ 
+                        jobPostingId: job.id,
+                        userId: job.workerId,
+                        assigned_at: new Date(),
+                        checkin_at: null,
+                        checkout_at: null,
+                        reason: null,
+                        status: "active",
+                        processComplete: 0,
+                        note: "JobGroup active"
+                    });
+                }
             }
         }
 

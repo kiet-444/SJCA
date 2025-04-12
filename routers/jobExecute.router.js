@@ -2,6 +2,8 @@ const express = require('express');
 const JobExecuteController = require('../controllers/JobExecute.controller');
 const { verifyToken, isEmployer } = require('../middleware/auth.middleware');
 const router = express.Router();
+const multer = require('multer');
+const upload = multer();
 
 /**
  * @swagger
@@ -120,7 +122,7 @@ router.get('/job-execute/job-posting/:jobPostingId', verifyToken, JobExecuteCont
  *       500:
  *         description: Internal server error
  */
-router.patch('/job-execute/:id', verifyToken, isEmployer, JobExecuteController.updateJobExecute);
+router.patch('/job-execute/:id', upload.any(), verifyToken, isEmployer, JobExecuteController.updateJobExecute);
 
 
 /**
