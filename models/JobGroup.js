@@ -1,5 +1,6 @@
 const {DataTypes} = require('sequelize');
 const sequelize = require('../config/db');
+const { updateStatusJobGroup } = require('../controllers/JobGroup.controller');
 
 const JobGroup = sequelize.define('JobGroup', {
     title: {

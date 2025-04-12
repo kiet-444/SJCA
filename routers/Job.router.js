@@ -114,6 +114,29 @@ router.get('/jobPostings', JobManagement.getJobPostings);
 
 /**
  * @swagger
+ * /jobs/jobTypes:
+ *   get:
+ *     summary: Lấy danh sách loại cong viec
+ *     tags: [Job]
+ *     responses:
+ *       200:
+ *         description: Danh sách loại cong viec
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/JobType'
+ */
+router.get('/jobType/:id', JobManagement.getJobTypeById);
+
+/**
+ * @swagger
  * /jobs:
  *   get:
  *     summary: Lấy danh sách công việc

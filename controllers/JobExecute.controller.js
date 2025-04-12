@@ -67,13 +67,35 @@ const JobExecuteController = {
     async updateJobExecute(req, res) {
         try {
             const { id } = req.params;
-            const updates = req.body;
-            
+            let updates = req.body;
+    
             const jobExecute = await JobExecute.findByPk(id);
             if (!jobExecute) {
                 return res.status(404).json({ message: 'Job execute not found' });
             }
-            
+    
+            // Nếu có file upload
+            if (req.files && req.files.length > 0) {
+                const file = req.files[0];
+                const { buffer, mimetype } = file;
+                const bufferStream = new PassThrough();
+                bufferStream.end(buffer);
+    
+                const resourceType = mimetype.startsWith('image') ? 'image' : 'raw';
+    
+                const uploadResult = await new Promise((resolve, reject) => {
+                    cloudinary.uploader.upload_stream(
+                        { resource_type: resourceType },
+                        (error, result) => {
+                            if (error) reject(error);
+                            else resolve(result);
+                        }
+                    ).end(buffer);
+                });
+    
+                updates.image = uploadResult.secure_url;
+            }
+    
             await jobExecute.update(updates);
             res.status(200).json({ message: 'Job execute updated successfully', jobExecute });
         } catch (error) {
