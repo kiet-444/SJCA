@@ -13,7 +13,7 @@ const JobExecuteController = {
             console.error('Error sending job execute:', error);
             res.status(500).json({ error: error.message });
         }
-    },
+    },  
 
     async getDailyJobs(req, res) {
         try {
@@ -40,31 +40,44 @@ const JobExecuteController = {
 
     async getJobExecuteByJobPostingId(req, res) {
         try {
-            const userId = req.userId;
             const { jobPostingId } = req.params;
-
+    
             if (!jobPostingId){
                 return res.status(400).json({ message: 'JobPostingId is required' });
             }
-
+    
+            // Lấy tất cả job execute trong jobPostingId
             const jobExecutes = await JobExecute.findAll({
                 where: {
-                    jobPostingId,
-                    userId
+                    jobPostingId
                 }
             });
-            
+    
+            // Nếu không có job execute nào trong job posting
             if(!jobExecutes || jobExecutes.length === 0) {
-                return res.status(404).json({ message: 'Job execute not found' });
-            } 
-
-            res.status(200).json({ message: 'Get Job Execute successfully', data: jobExecutes });
+                return res.status(404).json({ message: 'No job execute found for this job posting' });
+            }
+    
+            // Gửi tất cả job execute cho các user trong job posting
+            res.status(200).json({ message: 'Job executes fetched successfully', data: jobExecutes });
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
     },
-
-
+    
+    // async getJobExecuteById(req, res) {
+    //     try {
+    //         const { id } = req.params;
+    //         const jobExecute = await JobExecute.findByPk(id);
+    //         if (!jobExecute) {
+    //             return res.status(404).json({ message: 'Job execute not found' });
+    //         }
+    //         res.status(200).json({ message: 'Job execute fetched successfully', jobExecute });
+    //     } catch (error) {
+    //         res.status(500).json({ error: error.message });
+    //     }
+    // },
+    
     async updateJobExecute(req, res) {
         try {
             const { id } = req.params;

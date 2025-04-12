@@ -152,7 +152,7 @@ const updateStatusJobGroup = async (req, res) => {
 
             const jobPostings = await JobPosting.findAll({
                 where: { jobGroupId: id },
-                attributes: ['salary']
+                attributes: ['id', 'salary']
             });
 
             if (jobPostings.length === 0) {
@@ -163,37 +163,21 @@ const updateStatusJobGroup = async (req, res) => {
             if (totalAmount <= 0) {
                 return res.status(400).json({ message: "No valid salary in JobGroup" });
             }
-        }
 
-        if (status === "active") {
-            const jobPostings = await JobPosting.findAll({ where: { jobGroupId: id } });
-            
-            for (const job of jobPostings) {
-                if (!job.workerId) {
-                    console.warn(`JobPosting ${job.id} has no worker assigned`);
-                    continue;
-                }
+            const jobPostingIds = jobPostings.map(job => job.id);
 
-                const existExecute = await JobExecute.findOne({
-                    where: { jobPostingId: job.id, workerId: job.workerId },
-                });
-                if (!existExecute) {
-                    await job.createJobExecute({ 
-                        jobPostingId: job.id,
-                        userId: job.workerId,
-                        assigned_at: new Date(),
-                        checkin_at: null,
-                        checkout_at: null,
-                        reason: null,
-                        status: "active",
-                        processComplete: 0,
-                        note: "JobGroup active"
-                    });
+            await JobExecute.update({ status: "active", 
+                note:"send when update JobGroup", sent_at: new Date() }, 
+            { 
+                where: {
+                jobPostingId: { [Op.in]: jobPostingIds },
+                status: {[Op.ne]: "active" } 
                 }
             }
-        }
-
-        await jobGroup.update({ status });
+        );
+    }
+           
+    await jobGroup.update({ status });
 
         res.status(200).json({ message: 'JobGroup status updated successfully', data: jobGroup });
     } catch (error) {
