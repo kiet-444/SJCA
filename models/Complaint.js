@@ -20,6 +20,10 @@ const ComplaintRecord = sequelize.define('ComplaintRecord', {
             key: 'id',
         },
     },
+    image: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
     type: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -32,6 +36,9 @@ const ComplaintRecord = sequelize.define('ComplaintRecord', {
         type: DataTypes.STRING,
         allowNull: false,
         defaultValue: 'pending',
+        validate: {
+            isIn: [['accepted', 'rejected', 'pending']],
+        },
     },
 }, {
     timestamps: true

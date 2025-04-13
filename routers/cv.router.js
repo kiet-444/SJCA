@@ -11,15 +11,14 @@ const upload = multer({ storage });
  * @swagger
  * tags:
  *   name: CV
- *   description: Quản lý hồ sơ CV
+ *   description: Management CV
  */
 
 /**
  * @swagger
  * tags:
  *   name: Application
- *   description: Quản lý ứng tuyển
- */
+ *   description: Mnagement Application
 
 // Upload CV
 /**

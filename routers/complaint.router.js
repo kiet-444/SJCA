@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const ComplaintController = require('../controllers/Complaint.controller');
-const { verifyToken, isWorkerOrEmployer } = require('../middleware/auth.middleware');
+const { verifyToken, isWorkerOrEmployer, isSupportStaff } = require('../middleware/auth.middleware');
 
 /**
  * @swagger
@@ -29,6 +29,9 @@ const { verifyToken, isWorkerOrEmployer } = require('../middleware/auth.middlewa
  *         description:
  *           type: string
  *           description: Description of the complaint
+ *         image:
+ *           type: string
+ *           description: URL of the uploaded image
  *         status:
  *           type: string
  *           enum: [pending, resolved, rejected]
@@ -158,7 +161,7 @@ router.get('/:id', verifyToken, ComplaintController.getComplaintRecordById);
  *     security:
  *       - bearerAuth: []
  */
-router.put('/:id', verifyToken, ComplaintController.updateComplaintRecord);
+router.put('/:id', verifyToken, isSupportStaff,  ComplaintController.updateComplaintRecord);
 
 /**
  * @swagger
