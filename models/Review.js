@@ -13,12 +13,16 @@ const Review = sequelize.define('Review', {
     rating: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        defaultValue: 0,
+        defaultValue: 5,
         validate: {
             min: 0,
             max: 5,
         },
     },
+    reason: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    }
 }, {
     timestamps: true
 });
