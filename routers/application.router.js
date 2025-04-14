@@ -89,8 +89,6 @@ router.get('/job/:jobPostingId', verifyToken, isEmployer, ApplicationManagementC
 router.put('/:applicationId/status', verifyToken, isEmployer, ApplicationManagementController.updateApplicationStatus);
 
 
-// ====================== WORKER ======================
-
 /**
  * @swagger
  * /applications/user:

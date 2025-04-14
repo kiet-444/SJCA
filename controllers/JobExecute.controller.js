@@ -55,10 +55,9 @@ const JobExecuteController = {
     
             // Nếu không có job execute nào trong job posting
             if(!jobExecutes || jobExecutes.length === 0) {
-                return res.status(404).json({ message: 'No job execute found for this job posting' });
+                return res.status(200).json({ message: 'No job execute for this job posting' });
             }
     
-            // Gửi tất cả job execute cho các user trong job posting
             res.status(200).json({ message: 'Job executes fetched successfully', data: jobExecutes });
         } catch (error) {
             res.status(500).json({ error: error.message });

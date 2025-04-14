@@ -194,5 +194,22 @@ const getUserByPkId = async (req, res) => {
     }
 };
 
+// admin management status account 
+const updateUserStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        const user = await User.findByPk(id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        user.status = status;
+        await user.save();
+        res.status(200).json({ message: 'User status updated successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to update user status', error });
+    }
+};
 
-module.exports = { updateUser, deleteUser, getAllUsers, getUserByPkId, getTotalAccounts, getCompanyByRating, getListCompany };
+
+module.exports = { updateUser, deleteUser, getAllUsers, getUserByPkId, getTotalAccounts, getCompanyByRating, getListCompany, updateUserStatus };

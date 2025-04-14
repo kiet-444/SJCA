@@ -168,5 +168,20 @@ const releasePayment = async (req, res) => {
     }
 };
 
+const paymentHistory = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const escrowWallet = await EscrowWallet.findOne({ where: { userId } });
+        if (!escrowWallet) {
+            return res.status(404).json({ success: false, message: "Escrow Wallet của người dùng không tìm thấy" });
+        }
+        return res.status(200).json({ success: true, data: escrowWallet });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ success: false, message: "Lỗi khi tìm thấy lịch sử giao dịch" });
+    }
+};
 
-module.exports = { createPayment, paymentCallback, releasePayment };
+
+
+module.exports = { createPayment, paymentCallback, releasePayment, paymentHistory };

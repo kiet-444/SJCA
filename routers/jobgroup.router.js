@@ -122,6 +122,7 @@ router.get('/', verifyToken, isEmployer, JobGroupController.getAllJobGroupsByUse
  *         description: Đã xảy ra lỗi
  */
 router.get('/:id', JobGroupController.getJobGroupById);
+
 /**
  * @swagger
  * /api/jobGroups:

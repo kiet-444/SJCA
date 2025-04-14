@@ -146,6 +146,27 @@ const getAllJobs = async (req, res) => { //lấy all job theo job group theo id 
     }
 };
 
+const getAllJobByAdmin = async (req, res) => {
+    try{
+
+        const today = new Date();
+        const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const startOfYear = new Date(today.getFullYear(), 0, 1);
+
+        const totalToday = await JobPosting.count({ where: { createdAt: { [Op.gte]: startOfDay } } });
+        const totalThisMonth = await JobPosting.count({ where: { createdAt: { [Op.gte]: startOfMonth } } });
+        const totalThisYear = await JobPosting.count({ where: { createdAt: { [Op.gte]: startOfYear } } });
+        return res.status(200).json({
+            totalToday,
+            totalThisMonth,
+            totalThisYear
+        });
+    } catch (error) {
+        console.error('wrong when get all job', error);
+        return res.status(500).json({ message: 'wrong when get all job' });
+    }
+}
 const getJobById = async (req,res) => {
     try {
         const { id } = req.params;
@@ -224,6 +245,6 @@ const getJobTypeById = async (req, res) => {
 };
 
 
-module.exports = {createJobType, createJob, getAllJobs, getJobById, getJobPostings, getJobByJobGroupId, getJobPostingsByJobGroupsIsPaid , getJobTypeById};
+module.exports = {createJobType, createJob, getAllJobs, getJobById, getJobPostings, getJobByJobGroupId, getJobPostingsByJobGroupsIsPaid , getJobTypeById, getAllJobByAdmin};
 
 
