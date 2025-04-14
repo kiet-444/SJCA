@@ -244,5 +244,36 @@ router.get('/companies/maxRating', UserController.getCompanyByRating);
  */
 router.get('/:id', verifyToken, isWorkerOrEmployer, UserController.getUserByPkId);
 
+// Update user status (admin only)
+/**
+ *  @swagger
+ * /api/user/update/{id}:
+ *  
+ *  put:
+ *    summary: Update user status
+ *    tags: [User]
+ *    parameters:
+ *      - in: path
+ *        name: id
+ *        schema:   
+ *          type: string
+ *        required: true
+ *        description: The ID of the user to update
+ *    requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *            $ref: '#/components/schemas/User'
+ *    responses:
+ *      200:
+ *        description: User status updated successfully 
+ *      404:
+ *        description: User not found   
+ *      500:
+ *        description: Failed to update user status 
+ */
+router.get('/update/:id', verifyToken, isAdmin, UserController.updateUserStatus);
+
 
 module.exports = router;

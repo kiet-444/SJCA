@@ -60,9 +60,12 @@ const register = async (req, res) => {
             phoneNumber,
             address,
             password,
+            status: role === 'employer' ? 'pending' : 'approved',
             role,
             verificationToken,
         });
+
+        await newUser.save();
 
         const verificationLink = `${process.env.BASE_URL}/api/auth/verify-email?token=${verificationToken}`;
 

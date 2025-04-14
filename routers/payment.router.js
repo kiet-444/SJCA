@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const PaymentController = require("../controllers/Payment.controller");
-const { verifyToken } = require("../middleware/auth.middleware");
+const { verifyToken, isAdmin } = require("../middleware/auth.middleware");
 
 
 /**
@@ -75,5 +75,7 @@ router.post("/callback", PaymentController.paymentCallback);
  *         description: Đã xảy ra lỗi
  */
 router.post("/release", verifyToken, PaymentController.releasePayment);
+
+router.post("/paymentHistory", verifyToken, isAdmin, PaymentController.paymentHistory);
 
 module.exports = router;

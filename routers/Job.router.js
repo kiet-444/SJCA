@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const JobManagement = require('../controllers/JobManagement.controller');
-const { verifyToken, isEmployer, isWorkerOrEmployer } = require('../middleware/auth.middleware');
+const { verifyToken, isEmployer, isWorkerOrEmployer, isAdmin } = require('../middleware/auth.middleware');
 
 /**
  * @swagger
@@ -218,6 +218,29 @@ router.get('/job-groups/:jobGroupId', JobManagement.getJobByJobGroupId);
  *         description: Đã xảy ra lỗi
  */
 router.get('/:id', JobManagement.getJobById);
+
+/**
+ * @swagger
+ * /jobs/totalJob:
+ *   get:
+ *     summary: Lấy danh sách công việc
+ *     tags: [Job]
+ *     responses:
+ *       200:
+ *         description: Danh sách công việc
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Job'
+ * */
+router.get('/totalJob', verifyToken, isAdmin, JobManagement.getAllJobByAdmin);
 
 /**
  * @swagger
