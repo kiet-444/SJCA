@@ -136,6 +136,7 @@ const updateStatusJobGroup = async (req, res) => {
             if (jobPostings.length === 0) {
                 return res.status(400).json({ message: "No JobPosting in this group" });
             }
+            
 
             const allCompleted = jobPostings.every(job => job.status === "completed");  
 
@@ -165,17 +166,34 @@ const updateStatusJobGroup = async (req, res) => {
             }
 
             const jobPostingIds = jobPostings.map(job => job.id);
+            
+            // Bắt >= 1 work in job posting
+            for (const jobPostingId of jobPostingIds) {
+                const workerCount = await JobExecute.count({
+                    where: { jobPostingId }
+                });
 
-            await JobExecute.update({ status: "active", 
-                note:"send when update JobGroup", sent_at: new Date() }, 
-            { 
-                where: {
-                jobPostingId: { [Op.in]: jobPostingIds },
-                status: {[Op.ne]: "active" } 
+                if (workerCount === 0) {
+                    return res.status(400).json({ message: `JobPosting ${jobPostingId} does not have any assigned workers.` });
                 }
             }
-        );
-    }
+
+            // Nếu mọi điều kiện đều OK, update JobExecute
+            await JobExecute.update(
+                {
+                    status: "active",
+                    note: "send when update JobGroup",
+                    sent_at: new Date()
+                },
+                {
+                    where: {
+                        jobPostingId: { [Op.in]: jobPostingIds },
+                        status: { [Op.ne]: "active" }
+                    }
+                }
+            );
+        }
+
            
     await jobGroup.update({ status });
 

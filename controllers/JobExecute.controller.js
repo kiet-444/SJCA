@@ -4,10 +4,10 @@ const { Op } = require('sequelize');
 const JobExecuteController = {
     async createJobExecute(req, res) {
         try {
-            const { jobPostingId, userId, assigned_at, checkin_at, checkout_at, status, note, processComplete,
+            const { jobPostingId, userId, assigned_at, checkin_at, checkout_at, status, note, processComplete, work_process,
                    reason ,  } = req.body;
             
-            const jobExecute = await JobExecute.create({ jobPostingId, userId, assigned_at, checkin_at, checkout_at, status, note, processComplete, reason });
+            const jobExecute = await JobExecute.create({ jobPostingId, userId, assigned_at, checkin_at, checkout_at, status, note, processComplete, work_process, reason });
             res.status(201).json({ message: 'Job execute sent successfully', jobExecute });
         } catch (error) {
             console.error('Error sending job execute:', error);
