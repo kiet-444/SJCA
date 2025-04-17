@@ -214,7 +214,39 @@ router.get('/companies', UserController.getListCompany);
  *       500:
  *         description: Failed to retrieve companies
  */
-router.get('/companies/maxRating', UserController.getCompanyByRating);
+router.get('/companies/average-rating', UserController.getCompanyByRating);
+
+/**
+ * @swagger 
+ *  /api/user/users/{id}/average-rating:
+ *    get:
+ *      summary: Get the average rating of a user
+ *      tags: [User]
+ *      parameters:
+ *        - in: path
+ *          name: id
+ *          required: true
+ *          schema:
+ *            type: string
+ *          description: The ID of the user
+ *      responses:
+ *        200:
+ *          description: The average rating of the user
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  averageRating:
+ *                    type: number
+ *                    description: The average rating of the user
+ *        404:
+ *          description: User not found
+ *        500:
+ *          description: Internal server error  
+ */
+router.get('/users/:id/average-rating', UserController.getAverageRatingByUserId);
+
 
 // Get user by ID 
 /**
