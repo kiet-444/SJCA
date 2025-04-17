@@ -2,6 +2,7 @@ const { Application,
         CV, 
         User, 
         JobPosting } = require('../models');
+const { JobGroup } = require('../models');
 
 
 const ApplicationManagementController = {
@@ -144,8 +145,8 @@ const ApplicationManagementController = {
                         attributes: ['id', 'location', 'salary', 'title'],
                         include: [
                             {
-                                model: User,  // Đảm bảo có mối quan hệ với User
-                                attributes: ['id', 'avatar']  // Lấy avatar của user
+                                model: User,  
+                                attributes: ['id', 'avatar']  
                             },
                             {
                                 model: JobGroup,
@@ -165,7 +166,6 @@ const ApplicationManagementController = {
             return res.status(500).json({ message: 'Wrong when get list of applications' });
         }
     },
-
 
       
 };
