@@ -3,6 +3,7 @@ const { Application,
         User, 
         JobPosting } = require('../models');
 const { JobGroup } = require('../models');
+const { Op } = require('sequelize');
 
 
 const ApplicationManagementController = {
