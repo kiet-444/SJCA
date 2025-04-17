@@ -71,15 +71,37 @@ const CVManagementController = {
 
     async setDefaultCV(req, res) {
         try {
-            const { userId, cvId } = req.body;
-            await CV.update({status: 'Casual'}, { where: { userId, status:'Default' } });
-            await CV.update({status: 'Default'}, { where: { id: cvId } });
+            const { userId, cvId } = req.params; 
+
+            if (!userId || !cvId) {
+                return res.status(400).json({ message: 'userId and cvId are required' });
+            }
+
+            // Reset the current default CV
+            const resetDefault = await CV.update(
+                { status: 'Casual' },
+                { where: { userId, status: 'Default' } }
+            );
+            console.log('Reset Default Result:', resetDefault);
+
+            // Set the new default CV
+            const setDefault = await CV.update(
+                { status: 'Default' },
+                { where: { id: cvId, userId } } // Ensure the cvId belongs to the userId
+            );
+            console.log('Set Default Result:', setDefault);
+
+            if (setDefault[0] === 0) {
+                return res.status(404).json({ message: 'CV not found or could not be updated' });
+            }
+
             return res.status(200).json({ message: 'Default CV is set successfully.' });
         } catch (error) {
-            console.error('Wrong when set default CV:', error);
+            console.error('Error in setDefaultCV:', error);
             return res.status(500).json({ message: 'Wrong when set default CV' });
         }
     },
+
 
     // Lấy file CV 
     // async getCVFile(req, res) {
