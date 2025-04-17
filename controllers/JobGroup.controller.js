@@ -145,9 +145,20 @@ const updateStatusJobGroup = async (req, res) => {
             }
         }
 
+        const end_date = new Date(jobGroup.end_date);
+        const today = new Date();
+
+            end_date.setHours (0, 0, 0, 0);
+            today.setHours (0, 0, 0, 0);
+
+            if (end_date.getTime() < today.getTime()) {
+                await jobGroup.update({ status: "completed" });
+                return res.status(400).json({ message: "JobGroup has expired and was set to completed automatically." });
+            }
+
         // Nếu chuyển sang "active", phải kiểm tra đã thanh toán + có job
         if (status === "active") {
-            if (!jobGroup.isPaid) {
+            if (!jobGroup.isPaid) { 
                 return res.status(400).json({ message: "JobGroup is not payment" });
             }
 
@@ -168,16 +179,41 @@ const updateStatusJobGroup = async (req, res) => {
             const jobPostingIds = jobPostings.map(job => job.id);
             
             // Bắt >= 1 work in job posting
+            // for (const jobPostingId of jobPostingIds) {
+            //     const assignedCount = await JobExecute.count({
+            //         where: {
+            //             jobPostingId,
+            //             userId: { [Op.ne]: null }
+            //         }
+            //     });
+            
+            //     console.log(`JobPosting ${jobPostingId} has ${assignedCount} assigned workers`);
+            
+            //     if (assignedCount === 0) {
+            //         return res.status(400).json({
+            //             message: `JobPosting ${jobPostingId} does not have any assigned workers.`
+            //         });
+            //     }
+            // }
+            
+            const jobExecutes = await JobExecute.findAll({
+                where: {
+                    jobPostingId: { [Op.in]: jobPostingIds }
+                },
+                attributes: ['JobPostingId', 'userId']
+            });
+
+            const jobExecuteMap = jobPostingIds.reduce((acc, jobPostingId) => {
+                acc[jobPostingId] = [];
+                return acc;
+            }, {});
+            
+            jobExecutes.forEach(jobExecute => {
+                jobExecuteMap[jobExecute.JobPostingId].push(jobExecute.userId);
+            });
+            
             for (const jobPostingId of jobPostingIds) {
-                const assignedCount = await JobExecute.count({
-                    where: {
-                        jobPostingId,
-                        userId: { [Op.ne]: null }
-                    }
-                });
-            
-                console.log(`JobPosting ${jobPostingId} has ${assignedCount} assigned workers`);
-            
+                const assignedCount = jobExecuteMap[jobPostingId].length;
                 if (assignedCount === 0) {
                     return res.status(400).json({
                         message: `JobPosting ${jobPostingId} does not have any assigned workers.`
@@ -200,20 +236,7 @@ const updateStatusJobGroup = async (req, res) => {
                 }
             );
         }
-        // Kiem tra ngay ket thuc
-        
-            const end_date = new Date(jobGroup.end_date);
-            const today = new Date();
 
-            end_date.setHours (0, 0, 0, 0);
-            today.setHours (0, 0, 0, 0);
-
-            if (end_date.getTime() < today.getTime()) {
-                await jobGroup.update({ status: "completed" });
-            }
-        
-
-           
     await jobGroup.update({ status });
 
         res.status(200).json({ message: 'JobGroup status updated successfully', data: jobGroup });

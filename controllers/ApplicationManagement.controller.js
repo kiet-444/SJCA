@@ -123,12 +123,39 @@ const ApplicationManagementController = {
     // get applications by userId
     async getApplicationsByUserId(req, res) {
         try {
-            const userId = req.userId;s
-            const applications = await Application.findAll({
+            const userId = req.userId;
+
+
+            const cvs = await CV.findAll({
                 where: { userId },
-                include: [JobPosting]
+                attributes: ['id']
+            })
+
+
+            const applications = await Application.findAll({
+                where: {
+                    cvId: {
+                        [Op.in]: cvs.map(cv => cv.id) // Lọc các application có cvId nằm trong mảng cvs
+                    }
+                },
+                include: [
+                    {
+                        model: JobPosting,
+                        attributes: ['id', 'location', 'salary', 'title'],
+                        include: [
+                            {
+                                model: User,  // Đảm bảo có mối quan hệ với User
+                                attributes: ['id', 'avatar']  // Lấy avatar của user
+                            },
+                            {
+                                model: JobGroup,
+                                attributes: ['id', 'status', 'updatedAt']
+                            }
+                        ]
+                    }
+                ]
             });
-    
+   
             return res.status(200).json({
                 message: 'List of applications is retrieved successfully.',
                 data: applications,
@@ -138,6 +165,7 @@ const ApplicationManagementController = {
             return res.status(500).json({ message: 'Wrong when get list of applications' });
         }
     },
+
 
       
 };
