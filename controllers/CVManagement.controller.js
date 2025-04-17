@@ -39,7 +39,7 @@ const CVManagementController = {
 
             const cvs = await CV.findAll({
                 where: { userId },
-                attributes: ['id', 'filename', 'createdAt', 'updatedAt', 'status'], 
+                attributes: ['id', 'filename', 'file_Url', 'createdAt', 'updatedAt', 'status'], 
             });
 
             return res.status(200).json({

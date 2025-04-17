@@ -20,6 +20,7 @@ const upload = multer({ storage });
  *   name: Application
  *   description: Mnagement Application
  */
+
 // Upload CV
 
 /**
@@ -151,7 +152,6 @@ router.post('/job/:jobId/apply', verifyToken, CVManagementController.applyForJob
  */
 router.delete('/:cvId', verifyToken, CVManagementController.deleteCV);
 
-// Đặt CV mặc định
 /**
  * @swagger
  * /cvs/{cvId}/set-default:
@@ -172,7 +172,8 @@ router.delete('/:cvId', verifyToken, CVManagementController.deleteCV);
  *     security:
  *       - bearerAuth: []
  */
-router.put('/:cvId/set-default', verifyToken, CVManagementController.setDefaultCV);
+router.put('/:userId/:cvId/set-default', verifyToken, CVManagementController.setDefaultCV);
+
 
 // Lấy danh sách ứng tuyển từ CV
 /**
