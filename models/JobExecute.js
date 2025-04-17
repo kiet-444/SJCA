@@ -18,10 +18,6 @@ const JobExecute = sequelize.define('JobExecute', {
             key: 'id',
         },
     },
-    reason: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    },
     processComplete: {
         type: DataTypes.INTEGER,
         allowNull: false,

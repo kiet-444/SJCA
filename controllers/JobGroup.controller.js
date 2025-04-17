@@ -169,12 +169,19 @@ const updateStatusJobGroup = async (req, res) => {
             
             // Bắt >= 1 work in job posting
             for (const jobPostingId of jobPostingIds) {
-                const workerCount = await JobExecute.count({
-                    where: { jobPostingId }
+                const assignedCount = await JobExecute.count({
+                    where: {
+                        jobPostingId,
+                        userId: { [Op.ne]: null }
+                    }
                 });
-
-                if (workerCount === 0) {
-                    return res.status(400).json({ message: `JobPosting ${jobPostingId} does not have any assigned workers.` });
+            
+                console.log(`JobPosting ${jobPostingId} has ${assignedCount} assigned workers`);
+            
+                if (assignedCount === 0) {
+                    return res.status(400).json({
+                        message: `JobPosting ${jobPostingId} does not have any assigned workers.`
+                    });
                 }
             }
 
@@ -193,6 +200,18 @@ const updateStatusJobGroup = async (req, res) => {
                 }
             );
         }
+        // Kiem tra ngay ket thuc
+        
+            const end_date = new Date(jobGroup.end_date);
+            const today = new Date();
+
+            end_date.setHours (0, 0, 0, 0);
+            today.setHours (0, 0, 0, 0);
+
+            if (end_date.getTime() < today.getTime()) {
+                await jobGroup.update({ status: "completed" });
+            }
+        
 
            
     await jobGroup.update({ status });

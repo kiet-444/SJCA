@@ -41,6 +41,31 @@ const getCompanyByRating = async (req, res) => {
     }
 };
 
+const getAverageRatingByUserId = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Kiểm tra user tồn tại
+        const user = await User.findByPk(id, {
+            include: [{ model: Review, attributes: ['rating'] }]
+        });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const ratings = user.Reviews.map(review => review.rating);
+        const avgRating = ratings.length
+            ? parseFloat((ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1))
+            : 0;
+
+        res.status(200).json({ userId: id, avgRating });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to get average rating', error });
+    }
+};
+
+
 const getListCompany = async (req, res) => {
     try {
         const { name, minRating } = req.query;
@@ -212,4 +237,4 @@ const updateUserStatus = async (req, res) => {
 };
 
 
-module.exports = { updateUser, deleteUser, getAllUsers, getUserByPkId, getTotalAccounts, getCompanyByRating, getListCompany, updateUserStatus };
+module.exports = { updateUser, deleteUser, getAllUsers, getUserByPkId, getTotalAccounts, getCompanyByRating, getAverageRatingByUserId, getListCompany, updateUserStatus };

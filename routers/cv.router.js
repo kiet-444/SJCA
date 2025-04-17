@@ -19,8 +19,9 @@ const upload = multer({ storage });
  * tags:
  *   name: Application
  *   description: Mnagement Application
-
+ */
 // Upload CV
+
 /**
  * @swagger
  * /cvs:
