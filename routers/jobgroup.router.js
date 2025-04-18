@@ -74,6 +74,29 @@ router.get('/jobGroups', JobGroupController.getAllJobGroups);
 
 /**
  * @swagger
+ * /api/jobGroups/inactive:
+ *   get:
+ *     summary: Lấy danh sách Job Groups có trạng thái inactive
+ *     tags: [JobGroup]
+ *     responses:
+ *       200:
+ *         description: Danh sách Job Groups có trạng thái inactive
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/JobGroup'
+ *       500:
+ *         description: Lỗi server
+ */
+
+
+router.get('/jobGroupsInactive', JobGroupController.getAllJobGroupsInactive);
+
+
+/**
+ * @swagger
  * /api/jobGroups/:
  *   get:
  *     summary: Lấy danh sách Job Groups theo Employer
