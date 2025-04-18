@@ -47,6 +47,48 @@ const getAllJobGroups = async (req, res) => {
     }
 };
 
+const getAllJobGroupsInactive = async (req, res) => {
+    try {
+        const { start_date, end_date } = req.query;
+        const today = new Date();
+        const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+        const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+
+
+        let whereCondition = { status: 'inactive' };
+
+        if (start_date && end_date) {
+            whereCondition.start_date = { [Op.between]: [new Date(start_date), new Date(end_date)] };
+        }
+
+        const jobGroups = await JobGroup.findAll({
+            where: whereCondition,
+            include: [
+                {
+                    model: JobPosting,
+                    attributes: ['id', 'title', 'description', 'salary', 'location'],
+                },
+            ],
+            order: [['start_date', 'ASC']],
+        });
+
+        const totalJob = await JobGroup.count({ where: { status: 'inactive' } });
+
+        const totalJobToday = await JobGroup.count({
+            where: {
+                status: 'inactive',
+                start_date: { [Op.between]: [startOfDay, endOfDay] },
+            },
+        });
+
+
+        res.status(200).json({ totalJob, totalJobToday, data: jobGroups });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to get inactive job groups', error });
+    }
+};
+
+
 const getAllJobGroupsByUserId = async (req, res) => {
     try {
         const userId = req.userId;
@@ -248,4 +290,4 @@ const updateStatusJobGroup = async (req, res) => {
 
 
 
-module.exports = { creatJobGroup, updateStatusJobGroup, getAllJobGroups, getAllJobGroupsByUserId, getJobGroupById };
+module.exports = { creatJobGroup, updateStatusJobGroup, getAllJobGroups, getAllJobGroupsInactive, getAllJobGroupsByUserId, getJobGroupById };
