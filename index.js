@@ -3,6 +3,8 @@
     const sequelize = require('./config/db')
     const swaggerUi = require('swagger-ui-express');
     const swaggerSpec = require('./swagger');
+    const multer = require('multer');
+    const upload = multer();
 
     const cors = require('cors');
   
@@ -25,6 +27,7 @@
 
     app.use(cors());
     app.use(express.json());
+    app.use(upload.any());
 
     const port = process.env.PORT || 3000;
     const YOUR_DOMAIN = process.env.DOMAIN || 'http://localhost:3000';

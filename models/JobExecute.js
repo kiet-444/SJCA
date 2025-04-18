@@ -47,6 +47,14 @@ const JobExecute = sequelize.define('JobExecute', {
         type: DataTypes.STRING,
         allowNull: true,
     },
+    checkin_img:{
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    checkout_img: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
     reason: {
         type: DataTypes.STRING,
         allowNull: true,

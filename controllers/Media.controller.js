@@ -1,5 +1,5 @@
 const { PassThrough } = require('stream');
-const cloudinary = require('../config/cloudinary');
+const cloudinary = require('../config/cloudinary.config');
 
 const upload = async (req, res) => {
     try {
@@ -40,6 +40,17 @@ const upload = async (req, res) => {
     }
 };
 
+const deleteMedia = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await cloudinary.uploader.destroy(id);
+        res.status(200).json({ message: 'Media deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 module.exports = {
-    upload
+    upload,
+    deleteMedia
 };

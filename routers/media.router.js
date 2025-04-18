@@ -51,5 +51,29 @@ const uploadMiddleware = multer().array('files');
  */
 router.post('/upload', uploadMiddleware, MediaController.upload);
 
+/**
+ *  
+ * @swagger
+ * /api/media/delete/{public_id}:
+ *   delete:
+ *     summary: Delete a file from Cloudinary
+ *     tags: [Media]
+ *     parameters:
+ *       - in: path
+ *         name: public_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Cloudinary public_id of the file to delete
+ *     responses:
+ *       200:
+ *         description: File deleted successfully
+ *       404:
+ *         description: File not found
+ *       500:
+ *         description: Internal server error
+ * */
+router.delete('/delete/:public_id', MediaController.deleteMedia);
+
 module.exports = router;
 
