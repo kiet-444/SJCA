@@ -8,27 +8,20 @@ const upload = async (req, res) => {
         }
 
         const file = req.files[0];
-        const { buffer } = file;
+        const { buffer, mimetype } = file;
 
         const bufferStream = new PassThrough();
         bufferStream.end(buffer);
+        
+        const resourceType = mimetype.startsWith('image') ? 'image' : 'raw';
 
         cloudinary.uploader.upload_stream(
-            { resource_type: 'image' },
+            { resource_type: resourceType },
             async (error, result) => {
                 if (error) {
                     return res.status(500).json({ error: error.message });
                 }
-                // console.log('check',result);
                 try {
-                    const media = new Media({
-                        id: result.public_id,
-                        name: result.original_filename,
-                        url: result.secure_url,
-                        created_at: result.created_at
-                    });
-
-                    await media.save();
                     return res.json({
                         id: result.public_id,
                         name: result.original_filename,
@@ -50,29 +43,14 @@ const upload = async (req, res) => {
 const deleteMedia = async (req, res) => {
     try {
         const { id } = req.params;
-
-        // Find the media in the database to get the Cloudinary public_id
-        const media = await Media.findOne({ id }); // change (id) to ({id}) and use findOne instead of findById
-        if (!media) {
-            return res.status(404).json({ message: 'Media not found' });
-        }
-
-        // Delete the file from Cloudinary
-        cloudinary.uploader.destroy(media.id, async (error, result) => {
-            if (error) {
-                return res.status(500).json({ error: 'Failed to delete media from Cloudinary' });
-            }
-
-            // Only delete from the database if Cloudinary deletion succeeded
-            await Media.deleteOne({ id }); // change (id) to ({id}) and use deleteOne instead of deleteById
-            res.status(200).json({ message: 'Media deleted successfully from database and Cloudinary' });
-        });
+        await cloudinary.uploader.destroy(id);
+        res.status(200).json({ message: 'Media deleted successfully' });
     } catch (error) {
-        res.status(500).json({ message: 'Failed to delete media', error });
+        res.status(500).json({ error: error.message });
     }
 };
 
 module.exports = {
-    upload, 
+    upload,
     deleteMedia
 };
