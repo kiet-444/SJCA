@@ -1,5 +1,7 @@
 const { JobExecute } = require('../models');
 const { Op } = require('sequelize');
+const { upload } = require('../controllers/Media.controller');
+
 
 const JobExecuteController = {
     async createJobExecute(req, res) {
@@ -88,25 +90,39 @@ const JobExecuteController = {
             }
     
             // upload img
-            if (req.files && req.files.length > 0) {
-                const file = req.files[0];
-                const { buffer, mimetype } = file;
-                const bufferStream = new PassThrough();
-                bufferStream.end(buffer);
+            // if (req.files && req.files.length > 0) {
+            //     const file = req.files[0];
+            //     const { buffer, mimetype } = file;
+            //     const bufferStream = new PassThrough();
+            //     bufferStream.end(buffer);
     
-                const resourceType = mimetype.startsWith('image') ? 'image' : 'raw';
+            //     const resourceType = mimetype.startsWith('image') ? 'image' : 'raw';
     
-                const uploadResult = await new Promise((resolve, reject) => {
-                    cloudinary.uploader.upload_stream(
-                        { resource_type: resourceType },
-                        (error, result) => {
-                            if (error) reject(error);
-                            else resolve(result);
-                        }
-                    ).end(buffer);
-                });
+            //     const uploadResult = await new Promise((resolve, reject) => {
+            //         cloudinary.uploader.upload_stream(
+            //             { resource_type: resourceType },
+            //             (error, result) => {
+            //                 if (error) reject(error);
+            //                 else resolve(result);
+            //             }
+            //         ).end(buffer);
+            //     });
     
-                updates.image = uploadResult.secure_url;
+            //     updates.image = uploadResult.secure_url;
+            // }
+
+            if (req.files) {
+                if (req.files.checkin_img && req.files.checkin_img[0]) {
+                    const checkinFile = req.files.checkin_img[0];
+                    const checkinUrl = await upload(checkinFile);
+                    updates.checkin_img = checkinUrl; 
+                }
+    
+                if (req.files.checkout_img && req.files.checkout_img[0]) {
+                    const checkoutFile = req.files.checkout_img[0];
+                    const checkoutUrl = await upload(checkoutFile);
+                    updates.checkout_img = checkoutUrl; 
+                }
             }
     
             await jobExecute.update(updates);
@@ -117,6 +133,7 @@ const JobExecuteController = {
         }
     },
 
+    
     async deleteJobExecute(req, res) {
         try {
             const { id } = req.params;

@@ -130,20 +130,20 @@ const updateStatusJobGroup = async (req, res) => {
         }
 
         // Nếu chuyển sang "completed", phải kiểm tra job hoàn thành
-        if (status === "completed") {
-            const jobPostings = await JobPosting.findAll({ where: { jobGroupId: id } });
+        // if (status === "completed") {
+        //     const jobPostings = await JobPosting.findAll({ where: { jobGroupId: id } });
 
-            if (jobPostings.length === 0) {
-                return res.status(400).json({ message: "No JobPosting in this group" });
-            }
+        //     if (jobPostings.length === 0) {
+        //         return res.status(400).json({ message: "No JobPosting in this group" });
+        //     }
             
 
-            const allCompleted = jobPostings.every(job => job.status === "completed");  
+        //     const allCompleted = jobPostings.every(job => job.status === "completed");  
 
-            if (!allCompleted) {
-                return res.status(400).json({ message: "All JobPosting in 'completed' when update JobGroup" });
-            }
-        }
+        //     if (!allCompleted) {
+        //         return res.status(400).json({ message: "All JobPosting in 'completed' when update JobGroup" });
+        //     }
+        // }
 
         const end_date = new Date(jobGroup.end_date);
         const today = new Date();
@@ -195,7 +195,7 @@ const updateStatusJobGroup = async (req, res) => {
             //         });
             //     }
             // }
-            
+            // Bắt >= 1 work in job posting
             const jobExecutes = await JobExecute.findAll({
                 where: {
                     jobPostingId: { [Op.in]: jobPostingIds }
