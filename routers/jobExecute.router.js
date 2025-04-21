@@ -121,7 +121,10 @@ router.get('/job-execute/job-posting/:jobPostingId', verifyToken, JobExecuteCont
  *       500:
  *         description: Internal server error
  */
-router.patch('/job-execute/:id', upload.any(), verifyToken, JobExecuteController.updateJobExecute);
+router.patch('/job-execute/:id', upload.fields([
+    {name: 'checkin_img', maxCount: 1},
+    {name: 'checkout_img', maxCount: 1}
+]), verifyToken, JobExecuteController.updateJobExecute);
 
 
 /**

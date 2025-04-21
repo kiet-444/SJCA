@@ -64,7 +64,7 @@ const JobPosting = sequelize.define('JobPosting', {
     },
     salary: {
         type: DataTypes.DECIMAL(10, 2), // Lương với 10 chữ số tổng cộng và 2 chữ số thập phân
-        allowNull: true, // Lương có thể để trống
+        allowNull: false, 
     },
     jobTypeId: {
         type: DataTypes.INTEGER,

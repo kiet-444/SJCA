@@ -2,28 +2,53 @@ const { CV,
         User, 
         JobPosting, 
         Application } = require('../models');
+const cloudinary = require('../config/cloudinary.config'); 
 
 const CVManagementController = { 
 
     async uploadCV(req, res) {
         try {
             const userId = req.userId;
-            const { file_Id, file_Url, filename } = req.body;
-
-            const newCV = await CV.create({
-                userId,
-                file_Id,
-                file_Url,
-                filename
-            });
-
-            return res.status(201).json({
-                message: 'CV is uploaded successfully.',
-                data: newCV.id, 
-            });
+            const file = req.file || (req.files && req.files[0]);
+    
+            if (!file) {
+                return res.status(400).json({ message: 'No file uploaded' });
+            }
+    
+            const { buffer, mimetype, originalname } = file;
+            const bufferStream = new PassThrough();
+            bufferStream.end(buffer);
+    
+            const resourceType = mimetype.startsWith('image') ? 'image' : 'raw';
+    
+            cloudinary.uploader.upload_stream(
+                {
+                    resource_type: resourceType,
+                    folder: 'cv_uploads' 
+                },
+                async (error, result) => {
+                    if (error) {
+                        console.error('Error uploading to Cloudinary:', error);
+                        return res.status(500).json({ message: 'Upload to Cloudinary failed' });
+                    }
+    
+                    const newCV = await CV.create({
+                        userId,
+                        file_Id: result.public_id,
+                        file_Url: result.secure_url,
+                        filename: result.original_filename,
+                        status: 'Casual' // hoặc set mặc định tùy hệ thống
+                    });
+    
+                    return res.status(201).json({
+                        message: 'CV uploaded successfully.',
+                        data: newCV.id,
+                    });
+                }
+            ).end(buffer);
         } catch (error) {
-            console.error('Wrong when uploading CV:', error);
-            return res.status(500).json({ message: 'wrong when uploading CV' });
+            console.error('Error in uploadCV:', error);
+            return res.status(500).json({ message: 'Error when uploading CV' });
         }
     },
 
