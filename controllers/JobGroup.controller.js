@@ -242,7 +242,7 @@ const updateStatusJobGroup = async (req, res) => {
                 where: {
                     jobPostingId: { [Op.in]: jobPostingIds }
                 },
-                attributes: ['JobPostingId', 'userId']
+                attributes: ['JobPosting', 'userId']
             });
 
             const jobExecuteMap = jobPostingIds.reduce((acc, jobPostingId) => {
@@ -251,7 +251,7 @@ const updateStatusJobGroup = async (req, res) => {
             }, {});
             
             jobExecutes.forEach(jobExecute => {
-                jobExecuteMap[jobExecute.JobPostingId].push(jobExecute.userId);
+                jobExecuteMap[jobExecute.JobPosting].push(jobExecute.userId);
             });
             
             for (const jobPostingId of jobPostingIds) {
