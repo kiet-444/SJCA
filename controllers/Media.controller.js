@@ -3,46 +3,68 @@ const cloudinary = require('../config/cloudinary.config');
 
 const upload = async (req, res) => {
     try {
-        if (!req.files || Object.keys(req.files).length === 0) {
-            return res.status(400).json({ error: 'No files uploaded' });
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        const uploadResults = [];
+        const file = req.files[0];
+        const { buffer } = file;
 
-        for (const key in req.files) {
-            const file = req.files[key][0]; 
-            const { buffer, mimetype } = file;
+        const bufferStream = new PassThrough();
+        bufferStream.end(buffer);
 
-            const bufferStream = new PassThrough();
-            bufferStream.end(buffer);
+        cloudinary.uploader.upload_stream(
+            { resource_type: 'raw' },
+            async (error, result) => {
+                if (error) {
+                    return res.status(500).json({ error: error.message });
+                }
+                // console.log('check',result);
+                try {
+                    const media = new Media({
+                        id: result.public_id,
+                        name: result.original_filename,
+                        url: result.secure_url,
+                        created_at: result.created_at
+                    });
 
-            const resourceType = mimetype.startsWith('image') ? 'image' : 'raw';
-
-            const result = await new Promise((resolve, reject) => {
-                cloudinary.uploader.upload_stream(
-                    { resource_type: resourceType },
-                    (error, result) => {
-                        if (error) reject(error);
-                        else resolve(result);
-                    }
-                ).end(buffer);
-            });
-
-            uploadResults.push({
-                field: key,
-                id: result.public_id,
-                name: result.original_filename,
-                url: result.secure_url,
-                created_at: result.created_at
-            });
-        }
-
-        return res.status(200).json({ uploaded: uploadResults });
+                    await media.save();
+                    return res.json({
+                        id: result.public_id,
+                        name: result.original_filename,
+                        url: result.secure_url,
+                        created_at: result.created_at
+                    });
+                } catch (dbError) {
+                    console.error('Error saving media to database:', dbError);
+                    return res.status(500).json({ error: 'Error saving media to database' });
+                }
+            }
+        ).end(buffer);
 
     } catch (error) {
-        console.error('Upload error:', error);
         res.status(500).json({ error: error.message });
     }
+};
+
+
+const uploadFile = async (file) => {
+    return new Promise((resolve, reject) => {
+        if (!file || !file.buffer) return reject(new Error('Invalid file'));
+
+        const bufferStream = new PassThrough();
+        bufferStream.end(file.buffer);
+
+        const resourceType = file.mimetype.startsWith('image') ? 'image' : 'raw';
+
+        cloudinary.uploader.upload_stream(
+            { resource_type: resourceType },
+            (error, result) => {
+                if (error) return reject(error);
+                else return resolve(result.secure_url); 
+            }
+        ).end(file.buffer);
+    });
 };
 
 const deleteMedia = async (req, res) => {
@@ -57,5 +79,6 @@ const deleteMedia = async (req, res) => {
 
 module.exports = {
     upload,
+    uploadFile,
     deleteMedia
 };
