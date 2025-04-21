@@ -76,6 +76,28 @@ router.post("/callback", PaymentController.paymentCallback);
  */
 router.post("/release", verifyToken, PaymentController.releasePayment);
 
+/**
+ * @swagger
+ * /payment/paymentHistory:
+ *   post:
+ *     summary: Lý liệu payment
+ *     tags: [Payment]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Payment'
+ *     responses:
+ *       200:
+ *         description: Payment created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Payment'
+ *       500:
+ *         description: Đã xảy ra lỗi
+ */
 router.post("/paymentHistory", verifyToken, isAdmin, PaymentController.paymentHistory);
 
 module.exports = router;

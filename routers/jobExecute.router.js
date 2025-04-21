@@ -1,9 +1,13 @@
 const express = require('express');
+const router = express.Router();
 const JobExecuteController = require('../controllers/JobExecute.controller');
 const { verifyToken, isEmployer, isWorker } = require('../middleware/auth.middleware');
-const router = express.Router();
+
 const multer = require('multer');
-const upload = multer( { storage: multer.memoryStorage() } );
+const uploadMiddleware = multer().fields([
+    { name: 'checkin_img', maxCount: 1 },
+    { name: 'checkout_img', maxCount: 1 }
+]);
 
 /**
  * @swagger
@@ -60,7 +64,7 @@ router.post('/job-execute', verifyToken, JobExecuteController.createJobExecute);
  *       500:
  *         description: Internal server error
  */
-router.get('/job-execute/daily/:userId', verifyToken,  JobExecuteController.getDailyJobs);
+router.get('/job-execute/daily/:userId', verifyToken, JobExecuteController.getDailyJobs);
 
 /**
  * @swagger
@@ -88,7 +92,7 @@ router.get('/job-execute/job-posting/:jobPostingId', verifyToken, JobExecuteCont
  * @swagger
  * /job-execute/{id}:
  *   patch:
- *     summary: Update a job execution
+ *     summary: Update a job execution (with optional image upload)
  *     tags: [Job Execute]
  *     parameters:
  *       - in: path
@@ -99,10 +103,16 @@ router.get('/job-execute/job-posting/:jobPostingId', verifyToken, JobExecuteCont
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
+ *               checkin_img:
+ *                 type: string
+ *                 format: binary
+ *               checkout_img:
+ *                 type: string
+ *                 format: binary
  *               checkin_at:
  *                 type: string
  *               checkout_at:
@@ -121,15 +131,11 @@ router.get('/job-execute/job-posting/:jobPostingId', verifyToken, JobExecuteCont
  *       500:
  *         description: Internal server error
  */
-router.patch('/job-execute/:id', upload.fields([
-    {name: 'checkin_img', maxCount: 1},
-    {name: 'checkout_img', maxCount: 1}
-]), verifyToken, JobExecuteController.updateJobExecute);
-
+router.patch('/job-execute/:id', uploadMiddleware, verifyToken, JobExecuteController.updateJobExecute);
 
 /**
  * @swagger
- *  /job-execute/{id}:
+ * /job-execute/{id}:
  *   delete:
  *     summary: Delete a job execution
  *     tags: [Job Execute]
