@@ -1,6 +1,6 @@
 const { JobExecute } = require('../models');
 const { Op } = require('sequelize');
-const { upload } = require('../controllers/Media.controller');
+const { uploadFile } = require('../controllers/Media.controller');
 
 
 const JobExecuteController = {
@@ -114,13 +114,13 @@ const JobExecuteController = {
             if (req.files) {
                 if (req.files.checkin_img && req.files.checkin_img[0]) {
                     const checkinFile = req.files.checkin_img[0];
-                    const checkinUrl = await upload(checkinFile);
+                    const checkinUrl = await uploadFile(checkinFile);
                     updates.checkin_img = checkinUrl; 
                 }
     
                 if (req.files.checkout_img && req.files.checkout_img[0]) {
                     const checkoutFile = req.files.checkout_img[0];
-                    const checkoutUrl = await upload(checkoutFile);
+                    const checkoutUrl = await uploadFile(checkoutFile);
                     updates.checkout_img = checkoutUrl; 
                 }
             }

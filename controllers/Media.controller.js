@@ -8,20 +8,27 @@ const upload = async (req, res) => {
         }
 
         const file = req.files[0];
-        const { buffer, mimetype } = file;
+        const { buffer } = file;
 
         const bufferStream = new PassThrough();
         bufferStream.end(buffer);
-        
-        const resourceType = mimetype.startsWith('image') ? 'image' : 'raw';
 
         cloudinary.uploader.upload_stream(
-            { resource_type: resourceType },
+            { resource_type: 'raw' },
             async (error, result) => {
                 if (error) {
                     return res.status(500).json({ error: error.message });
                 }
+                // console.log('check',result);
                 try {
+                    const media = new Media({
+                        id: result.public_id,
+                        name: result.original_filename,
+                        url: result.secure_url,
+                        created_at: result.created_at
+                    });
+
+                    await media.save();
                     return res.json({
                         id: result.public_id,
                         name: result.original_filename,
@@ -40,6 +47,26 @@ const upload = async (req, res) => {
     }
 };
 
+
+const uploadFile = async (file) => {
+    return new Promise((resolve, reject) => {
+        if (!file || !file.buffer) return reject(new Error('Invalid file'));
+
+        const bufferStream = new PassThrough();
+        bufferStream.end(file.buffer);
+
+        const resourceType = file.mimetype.startsWith('image') ? 'image' : 'raw';
+
+        cloudinary.uploader.upload_stream(
+            { resource_type: resourceType },
+            (error, result) => {
+                if (error) return reject(error);
+                else return resolve(result.secure_url); 
+            }
+        ).end(file.buffer);
+    });
+};
+
 const deleteMedia = async (req, res) => {
     try {
         const { id } = req.params;
@@ -52,5 +79,6 @@ const deleteMedia = async (req, res) => {
 
 module.exports = {
     upload,
+    uploadFile,
     deleteMedia
 };

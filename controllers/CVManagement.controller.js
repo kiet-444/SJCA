@@ -3,6 +3,7 @@ const { CV,
         JobPosting, 
         Application } = require('../models');
 const cloudinary = require('../config/cloudinary.config'); 
+const { PassThrough } = require('stream');
 
 const CVManagementController = { 
 
@@ -37,7 +38,6 @@ const CVManagementController = {
                         file_Id: result.public_id,
                         file_Url: result.secure_url,
                         filename: result.original_filename,
-                        status: 'Casual' // hoặc set mặc định tùy hệ thống
                     });
     
                     return res.status(201).json({
@@ -94,38 +94,68 @@ const CVManagementController = {
         }
     },
 
+    // async setDefaultCV(req, res) {
+    //     try {
+    //         const { userId, cvId } = req.params; 
+
+    //         if (!userId || !cvId) {
+    //             return res.status(400).json({ message: 'userId and cvId are required' });
+    //         }
+
+    //         const resetDefault = await CV.update(
+    //             { status: 'Casual' },
+    //             { where: { userId, status: 'Default' } }
+    //         );
+    //         console.log('Reset Default Result:', resetDefault);
+
+    //         const setDefault = await CV.update(
+    //             { status: 'Default' },
+    //             { where: { id: cvId, userId } }
+    //         );
+    //         // console.log('Set Default Result:', setDefault);
+
+    //         if (setDefault[0] === 0) {
+    //             return res.status(404).json({ message: 'CV not found or could not be updated' });
+    //         }
+
+    //         return res.status(200).json({ message: 'Default CV is set successfully.' });
+    //     } catch (error) {
+    //         console.error('Error in setDefaultCV:', error);
+    //         return res.status(500).json({ message: 'Wrong when set default CV' });
+    //     }
+    // },
+
     async setDefaultCV(req, res) {
         try {
-            const { userId, cvId } = req.params; 
-
+            const { userId, cvId } = req.params;
+    
             if (!userId || !cvId) {
                 return res.status(400).json({ message: 'userId and cvId are required' });
             }
-
-            // Reset the current default CV
-            const resetDefault = await CV.update(
+    
+            const cv = await CV.findOne({ where: { id: cvId, userId } });
+    
+            if (!cv) {
+                return res.status(404).json({ message: 'CV not found' });
+            }
+    
+            await CV.update(
                 { status: 'Casual' },
                 { where: { userId, status: 'Default' } }
             );
-            console.log('Reset Default Result:', resetDefault);
 
-            // Set the new default CV
-            const setDefault = await CV.update(
+            await CV.update(
                 { status: 'Default' },
-                { where: { id: cvId, userId } } // Ensure the cvId belongs to the userId
+                { where: { id: cvId, userId } }
             );
-            console.log('Set Default Result:', setDefault);
-
-            if (setDefault[0] === 0) {
-                return res.status(404).json({ message: 'CV not found or could not be updated' });
-            }
-
-            return res.status(200).json({ message: 'Default CV is set successfully.' });
+    
+            return res.status(200).json({ message: 'Set default CV successfully' });
         } catch (error) {
             console.error('Error in setDefaultCV:', error);
             return res.status(500).json({ message: 'Wrong when set default CV' });
         }
     },
+    
 
 
     // Lấy file CV 
@@ -155,16 +185,17 @@ const CVManagementController = {
         try {
             const { cvId } = req.params;
             const cv = await CV.findByPk(cvId);
+
+            if (!cv) {
+                return res.status(404).json({ message: 'CV không tồn tại.' });
+            }
+
             const mimeType = cv.filename || 'application/octet-stream';
 
             res.setHeader('Content-Type', mimeType);
             res.setHeader('Content-Disposition', `inline; filename="${cv.filename}"`);
 
             res.send(cv.file_Url);
-
-            if (!cv) {
-                return res.status(404).json({ message: 'CV không tồn tại.' });
-            }
 
             return res.status(200).json({
                 message: 'Xem trước CV thành công.',

@@ -4,7 +4,8 @@
     const swaggerUi = require('swagger-ui-express');
     const swaggerSpec = require('./swagger');
     const multer = require('multer');
-    const upload = multer();
+    const storage = multer.memoryStorage();
+    const upload = multer({ storage });
 
     const cors = require('cors');
   
@@ -21,13 +22,14 @@
     const ComplaintRouter = require('./routers/complaint.router')
     const PaymentRouter = require('./routers/payment.router')
     const ReviewRouter = require('./routers/review.router')
+    const MediaRouter = require('./routers/media.router')
     
 
     const app = express();
 
     app.use(cors());
     app.use(express.json());
-    app.use(upload.any());
+    app.use('/api', MediaRouter);
 
     const port = process.env.PORT || 3000;
     const YOUR_DOMAIN = process.env.DOMAIN || 'http://localhost:3000';
