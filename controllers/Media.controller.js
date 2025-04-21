@@ -13,8 +13,10 @@ const upload = async (req, res) => {
         const bufferStream = new PassThrough();
         bufferStream.end(buffer);
 
+        const resourceType = file.mimetype.startsWith('image') ? 'image' : 'raw';
+
         cloudinary.uploader.upload_stream(
-            { resource_type: 'raw' },
+            { resource_type: resourceType },
             async (error, result) => {
                 if (error) {
                     return res.status(500).json({ error: error.message });
