@@ -3,39 +3,44 @@ const cloudinary = require('../config/cloudinary.config');
 
 const upload = async (req, res) => {
     try {
-        if (!req.files || req.files.length === 0) {
-            return res.status(400).json({ error: 'No file uploaded' });
+        if (!req.files || Object.keys(req.files).length === 0) {
+            return res.status(400).json({ error: 'No files uploaded' });
         }
 
-        const file = req.files[0];
-        const { buffer, mimetype } = file;
+        const uploadResults = [];
 
-        const bufferStream = new PassThrough();
-        bufferStream.end(buffer);
-        
-        const resourceType = mimetype.startsWith('image') ? 'image' : 'raw';
+        for (const key in req.files) {
+            const file = req.files[key][0]; 
+            const { buffer, mimetype } = file;
 
-        cloudinary.uploader.upload_stream(
-            { resource_type: resourceType },
-            async (error, result) => {
-                if (error) {
-                    return res.status(500).json({ error: error.message });
-                }
-                try {
-                    return res.json({
-                        id: result.public_id,
-                        name: result.original_filename,
-                        url: result.secure_url,
-                        created_at: result.created_at
-                    });
-                } catch (dbError) {
-                    console.error('Error saving media to database:', dbError);
-                    return res.status(500).json({ error: 'Error saving media to database' });
-                }
-            }
-        ).end(buffer);
+            const bufferStream = new PassThrough();
+            bufferStream.end(buffer);
+
+            const resourceType = mimetype.startsWith('image') ? 'image' : 'raw';
+
+            const result = await new Promise((resolve, reject) => {
+                cloudinary.uploader.upload_stream(
+                    { resource_type: resourceType },
+                    (error, result) => {
+                        if (error) reject(error);
+                        else resolve(result);
+                    }
+                ).end(buffer);
+            });
+
+            uploadResults.push({
+                field: key,
+                id: result.public_id,
+                name: result.original_filename,
+                url: result.secure_url,
+                created_at: result.created_at
+            });
+        }
+
+        return res.status(200).json({ uploaded: uploadResults });
 
     } catch (error) {
+        console.error('Upload error:', error);
         res.status(500).json({ error: error.message });
     }
 };

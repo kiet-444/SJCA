@@ -3,7 +3,7 @@ const JobExecuteController = require('../controllers/JobExecute.controller');
 const { verifyToken, isEmployer, isWorker } = require('../middleware/auth.middleware');
 const router = express.Router();
 const multer = require('multer');
-const upload = multer();
+const upload = multer( { storage: multer.memoryStorage() } );
 
 /**
  * @swagger
