@@ -25,6 +25,10 @@ const createPayment = async (req, res) => {
             return res.status(404).json({ success: false, message: "JobGroup không tồn tại hoặc không thuộc người dùng" });
         }
 
+        if (jobGroup.isPaid) {
+            return res.status(400).json({ success: false, message: "JobGroup đã được thanh toán" });
+        }
+        
         const calculateJobGroupTotal = async (jobGroupId) => {
             const jobPostings = await JobPosting.findAll({
                 where: { jobGroupId },
