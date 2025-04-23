@@ -10,10 +10,13 @@
 //     dialect: 'postgres' 
 // });
 
-// sequelize
-//     .authenticate()
-//     .then(() => console.log('Connection has been established successfully.'))
-//     // .catch(err => console.error('Unable to connect to the database:', err));
+// sequelize.sync({ alter: true })
+//   .then(() => {
+//     console.log('All models were synchronized successfully.');
+//   })
+//   .catch((error) => {
+//     console.error('Error syncing models:', error);
+//   });
 
 // module.exports = sequelize;
 

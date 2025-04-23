@@ -25,6 +25,14 @@ const User = sequelize.define('User', {
     type: DataTypes.ENUM('worker', 'employer', 'admin', 'support staff'),
     allowNull: false,
   },
+  sex: {
+    type: DataTypes.ENUM('male', 'female'),
+    allowNull: true,
+  },
+  dateOfBirth: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
   address: {
     type: DataTypes.STRING,
     allowNull: true,

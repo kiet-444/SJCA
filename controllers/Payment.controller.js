@@ -5,6 +5,7 @@ const JobGroup = require('../models/JobGroup');
 const JobPosting = require('../models/JobPosting');
 const JobExecute = require('../models/JobExecute');
 const PayOS = require('@payos/node');
+const Payment = require('../models/Payment');
 const { sequelize } = require('../models'); 
 
 dotenv.config();
@@ -37,7 +38,7 @@ const createPayment = async (req, res) => {
             let total = 0;
             for (const job of jobPostings) {
                 const number_of_person = job.number_of_person || 1; // fallback nếu không có field
-                total += (job.salary || 0) * number_of_person;
+                total += (parseFloat(job.salary) || 0) * number_of_person;
             }
         
             return total;
@@ -58,8 +59,8 @@ const createPayment = async (req, res) => {
             amount: totalAmount,
             orderCode: orderId,
             description: "Thanh toán JobGroup",
-            returnUrl: " https://seasonal-job.vercel.app/employer/employer-job-groups",
-            cancelUrl: " https://seasonal-job.vercel.app/employer/employer-job-groups",
+            returnUrl: "https://seasonal-job.vercel.app/employer/employer-job-groups",
+            cancelUrl: "https://seasonal-job.vercel.app/employer/employer-job-groups",
         };
 
         const paymentLink = await payos.createPaymentLink(response);
@@ -153,7 +154,7 @@ const releasePayment = async (req, res) => {
             }
 
             // Cập nhật số dư tài khoản nhân viên
-            await escrowWallet.update({ balance: escrowWallet.balance + amountToTransfer }, { transaction });
+            await escrowWallet.update({ balance: parseFloat(escrowWallet.balance) + amountToTransfer }, { transaction });
         }
 
         if (escrowWalletEmployer.balance < totalAmountToDeduct) {
@@ -172,7 +173,7 @@ const releasePayment = async (req, res) => {
     }
 };
 
-const paymentHistory = async (req, res) => {
+const getEscrowWallet = async (req, res) => {
     try {
         const userId = req.userId;
         const escrowWallet = await EscrowWallet.findOne({ where: { userId } });
@@ -185,7 +186,27 @@ const paymentHistory = async (req, res) => {
         return res.status(500).json({ success: false, message: "Lỗi khi tìm thấy lịch sử giao dịch" });
     }
 };
+const paymentHistory = async (req, res) => {
+    try {
+        const userId = req.userId;
+
+        const payments = await Payment.findAll({
+            where: { userId },
+            order: [['createdAt', 'DESC']], 
+        });
+
+        if (!payments || payments.length === 0) {
+            return res.status(404).json({ success: false, message: "The user has no payment history" });
+        }
+
+        return res.status(200).json({ success: true, data: payments });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ success: false, message: "Wrong when get payment history" });
+    }
+};
 
 
 
-module.exports = { createPayment, paymentCallback, releasePayment, paymentHistory };
+
+module.exports = { createPayment, paymentCallback, releasePayment, getEscrowWallet, paymentHistory };

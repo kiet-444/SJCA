@@ -47,7 +47,7 @@ const JobExecute = sequelize.define('JobExecute', {
         type: DataTypes.STRING,
         allowNull: true,
     },
-    checkin_img:{
+    checkin_img: {
         type: DataTypes.STRING,
         allowNull: true,
     },
@@ -68,7 +68,16 @@ const JobExecute = sequelize.define('JobExecute', {
         allowNull: false,
     },
 }, {
-    timestamps: true
-},  { freezeTableName: true });
+    sequelize,
+    modelName: 'JobExecute',
+    freezeTableName: true,
+    timestamps: true,
+    indexes: [
+        {
+            unique: true,
+            fields: ['jobPostingId', 'userId'],
+        },
+    ]
+});
 
 module.exports = JobExecute;
