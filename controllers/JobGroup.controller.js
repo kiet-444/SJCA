@@ -251,7 +251,7 @@ const updateStatusJobGroup = async (req, res) => {
             }, {});
             
             jobExecutes.forEach(jobExecute => {
-                jobExecuteMap[jobExecute.JobPosting].push(jobExecute.userId);
+                jobExecuteMap[jobExecute.jobPostingId].push(jobExecute.userId);
             });
             
             for (const jobPostingId of jobPostingIds) {

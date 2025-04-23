@@ -4,6 +4,7 @@ const { CV,
         Application } = require('../models');
 const cloudinary = require('../config/cloudinary.config'); 
 const { PassThrough } = require('stream');
+const mime = require('mime-types');
 
 const CVManagementController = { 
 
@@ -185,25 +186,18 @@ const CVManagementController = {
         try {
             const { cvId } = req.params;
             const cv = await CV.findByPk(cvId);
-
+    
             if (!cv) {
-                return res.status(404).json({ message: 'CV không tồn tại.' });
+                return res.status(404).json({ message: 'Cv not found' });
             }
-
-            const mimeType = cv.filename || 'application/octet-stream';
-
+    
+            const mimeType = mime.lookup(cv.filename) || 'application/octet-stream';
+    
             res.setHeader('Content-Type', mimeType);
             res.setHeader('Content-Disposition', `inline; filename="${cv.filename}"`);
-
-            res.send(cv.file_Url);
-
-            return res.status(200).json({
-                message: 'Xem trước CV thành công.',
-                data: {
-                    file_Url: cv.file_Url,
-                    filename: cv.filename
-                }
-            });
+    
+            return res.redirect(cv.file_Url);
+    
         } catch (error) {
             console.error('Lỗi khi xem trước CV:', error);
             return res.status(500).json({ message: 'Đã xảy ra lỗi khi xem trước CV.' });
