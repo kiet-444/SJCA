@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const PaymentController = require("../controllers/Payment.controller");
+const { paymentCallback } = require("../controllers/Payment.controller");
 const { verifyToken, isAdmin, isWorkerOrEmployer } = require("../middleware/auth.middleware");
 
 
@@ -92,7 +93,7 @@ router.post("/release", verifyToken, PaymentController.releasePayment);
  *       500:
  *         description: Đã xảy ra lỗi
  */
-router.get("/paymentHistory", verifyToken, isWorkerOrEmployer, PaymentController.paymentHistory);
+router.get("/paymentHistory", verifyToken, PaymentController.paymentHistory);
 
 /**
  * @swagger
@@ -117,5 +118,23 @@ router.get("/paymentHistory", verifyToken, isWorkerOrEmployer, PaymentController
  *         description: Đã xảy ra lỗi
  */
 router.post("/escrowWallet", verifyToken, isWorkerOrEmployer, PaymentController.getEscrowWallet);
+
+// /**
+//  *  @swagger
+//  *  /api/payment/test-payos:
+//  *    post:
+//  *      summary: Test PayOS payment
+//  *      tags: [Payment]
+//  *      responses:
+//  *        200:
+//  *          description: Payment created successfully
+//  *          content:
+//  *            application/json:
+//  *              schema:
+//  *                $ref: '#/components/schemas/Payment'
+//  *        500:
+//  *          description: Đã xảy ra lỗi
+//  */
+// router.post('/test-payos', PaymentController.testPayOS);
 
 module.exports = router;

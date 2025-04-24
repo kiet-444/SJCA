@@ -8,7 +8,7 @@ const JobType = sequelize.define('JobType', {
     },
     description: {
         type: DataTypes.TEXT,
-        allowNull: true, // Assuming description is optional
+        allowNull: true, 
     },
     status: {
         type: DataTypes.STRING,

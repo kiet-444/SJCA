@@ -82,7 +82,7 @@
     // });
 
     app.get('/', (req, res) => {
-        res.send('Chào mừng đến với ứng dụng của bạn!');
+        res.send('Hello, Welcome to our API!');
     });
     
     app.use((err, req, res, next) => {

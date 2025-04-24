@@ -63,6 +63,21 @@ const createPayment = async (req, res) => {
             cancelUrl: "https://seasonal-job.vercel.app/employer/employer-job-groups",
         };
 
+        // const payment = await Payment.create({
+        //     orderCode,
+        //     employerId: userId, 
+        //     workerId: null, 
+        //     jobGroupId,
+        //     jobId: null,
+        //     amount,
+        //     status: 'HELD', 
+        //     paymentDate: new Date()  
+        // });
+        
+        // if (!payment) {
+        //     return res.status(500).send("Lỗi tạo lịch sử giao dịch");
+        // }
+        
         const paymentLink = await payos.createPaymentLink(response);
         res.json({ checkoutUrl: paymentLink.checkoutUrl });
     } catch (error) {
@@ -76,37 +91,70 @@ const paymentCallback = async (req, res) => {
     try {
         const { data } = req.body;
 
-    if (data.code === '00') {
-        const orderCode = String(data.orderCode);  // ép chuỗichuỗi
-        const escrowWallet = await EscrowWallet.findOne({
-            where: { orderCode }
-        });
-
-        if (escrowWallet) {
-            await escrowWallet.update({
-            balance: parseFloat(escrowWallet.balance) + parseFloat(data.amount) //ep kieu balance
-        });
+        console.log("PayOS callback data:", data);
         
-        const jobGroup = await JobGroup.findOne({
-            where: { id: escrowWallet.jobGroupId, userId: escrowWallet.userId }
+        if (data.code !== '00') {
+            return res.status(400).send("Giao dịch không thành công");
+        }
+
+        console.log("PayOS callback data:", data);
+
+        const orderCode = String(data.orderCode);
+        const amount = parseFloat(data.amount);
+
+        if (isNaN(amount)) {
+            return res.status(400).send("Số tiền không hợp lệ");
+        }
+
+        const escrowWallet = await EscrowWallet.findOne({ where: { orderCode } });
+
+        if (!escrowWallet) {
+            return res.status(404).send("Không tìm thấy Escrow Wallet");
+        }
+
+        const jobGroupId = escrowWallet.jobGroupId;
+        const userId = escrowWallet.userId;
+
+        const payment = await Payment.create({
+            orderCode,
+            employerId: userId, 
+            workerId: null, 
+            jobGroupId,
+            jobId: null,
+            amount,
+            status: 'HELD', 
+        });
+        if (!payment) {
+            return res.status(500).send("Lỗi tạo lịch sử giao dịch");
+        }
+
+        await escrowWallet.update({
+            balance: parseFloat(escrowWallet.balance) + amount
         });
 
-        if (jobGroup) {
-            await jobGroup.update({
-                isPaid: true,
-                status: 'inactive'
-            });
+        const jobGroup = await JobGroup.findOne({
+            where: {
+                id: jobGroupId,
+                userId: userId
+            }
+        });
+
+        if (!jobGroup) {
+            return res.status(404).send("Không tìm thấy JobGroup phù hợp");
         }
-    }
-}
 
+        await jobGroup.update({
+            isPaid: true,
+            status: 'inactive'
+        });
 
-        res.status(200).send("OK");
+        return res.status(200).send("OK");
     } catch (error) {
-        console.error(error);
-        res.status(500).send("Lỗi xử lý callback từ PayOS");
+        console.error("Lỗi callback PayOS:", error);
+        return res.status(500).send("Lỗi xử lý callback từ PayOS");
     }
 };
+
 
 // Giải phóng tiền từ Escrow Wallet sang Worker khi công việc hoàn thành
 const releasePayment = async (req, res) => {
@@ -206,7 +254,31 @@ const paymentHistory = async (req, res) => {
     }
 };
 
+// const testPayOS = async (req, res) => {
+//     try {
+//         console.log("Test PayOS");
+//         const orderCode = Math.floor(Math.random() * 10000000);
+//         const order = {
+//             amount: 10000,
+//             orderCode,
+//             description: `Payment for order ${orderCode}`,
+//             returnUrl: "http://localhost:8080/payment-successful",
+//             cancelUrl: "http://localhost:8080",
+//         };
+
+//         console.log("Order created:", order);
+
+//         const paymentLink = await payos.createPaymentLink(order);
+//         console.log("Payment link created:", paymentLink);
+//         res.json({ checkoutUrl: paymentLink.checkoutUrl });
+
+//     } catch (error) {
+//     console.error("PayOS Error:", error); // Log the error with full details
+//     res.status(500).json({ message: 'Failed to test PayOS', error: error.message || JSON.stringify(error) });
+//     }
+// }
 
 
-
-module.exports = { createPayment, paymentCallback, releasePayment, getEscrowWallet, paymentHistory };
+module.exports = { createPayment, paymentCallback, releasePayment, getEscrowWallet, paymentHistory
+    // , testPayOS
+};

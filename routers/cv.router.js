@@ -174,6 +174,30 @@ router.delete('/:cvId', verifyToken, CVManagementController.deleteCV);
  */
 router.put('/:userId/:cvId/set-default', verifyToken, CVManagementController.setDefaultCV);
 
+// Xem trước CV
+/**
+ * @swagger
+ * /cvs/{cvId}/preview:
+ *   get:
+ *     summary: Xem trước CV
+ *     tags: [CV]
+ *     parameters:
+ *       - in: path
+ *         name: cvId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Xem trước CV thành công
+ *       404:
+ *         description: Không tìm thấy CV
+ *       500:
+ *         description: Đã xảy ra lỗi khi xem trước CV
+ *     security:
+ *       - bearerAuth: []
+ */
+router.get('/:cvId/preview', verifyToken, CVManagementController.previewCV);
 
 // Lấy danh sách ứng tuyển từ CV
 /**

@@ -190,17 +190,25 @@ const CVManagementController = {
             if (!cv) {
                 return res.status(404).json({ message: 'Cv not found' });
             }
+
+            const previewUrl = cloudinary.url(cv.file_Id, {
+                resource_type: 'raw',
+                type: 'upload',
+                attachment: false,//dont return the URL with the attachment parameter
+                flags: 'attachment',
+                secure: true,
+            });
     
             const mimeType = mime.lookup(cv.filename) || 'application/octet-stream';
     
             res.setHeader('Content-Type', mimeType);
             res.setHeader('Content-Disposition', `inline; filename="${cv.filename}"`);
     
-            return res.redirect(cv.file_Url);
+            return res.redirect(previewUrl);
     
         } catch (error) {
-            console.error('Lỗi khi xem trước CV:', error);
-            return res.status(500).json({ message: 'Đã xảy ra lỗi khi xem trước CV.' });
+            console.error('Wrong when preview CV:', error);
+            return res.status(500).json({ message: 'wrong when preview CV' });
         }
     },
 
