@@ -93,14 +93,19 @@ const paymentCallback = async (req, res) => {
                 status: 'inactive'
             });
 
-            await Payment.create({
-                orderCode: escrowWallet.orderCode,
-                description: 'Thanh toán JobGroup',
-                employerId: escrowWallet.userId,
-                jobGroupId: jobGroup.id,
-                amount: parseFloat(data.amount),
-                status: 'HELD'
-            });
+            try {
+                await Payment.create({
+                    orderCode: escrowWallet.orderCode,
+                    description: 'Thanh toán JobGroup',
+                    employerId: escrowWallet.userId,
+                    jobGroupId: jobGroup.id,
+                    amount: parseFloat(data.amount),
+                    status: 'HELD'
+                });
+                console.log('Payment created successfully');
+            } catch (err) {
+                console.error('Error creating payment:', err);
+            }
 
         }
     }
