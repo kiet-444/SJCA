@@ -91,6 +91,8 @@ const paymentCallback = async (req, res) => {
     try {
         const { data } = req.body;
 
+        console.log("PayOS callback data:", data);
+        
         if (data.code !== '00') {
             return res.status(400).send("Giao dịch không thành công");
         }
