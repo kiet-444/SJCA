@@ -8,6 +8,7 @@ const CV = require('./CV');
 const Application = require('./Application');
 const ComplaintRecord = require('./Complaint');
 const Review = require('./Review');
+const EsrowWallet = require('./EscrowWallet');
 
 // // User - Project
 // User.hasMany(JobGroup, { foreignKey: 'userId' });
@@ -76,6 +77,11 @@ ComplaintRecord.belongsTo(User, { foreignKey: 'userId' });
 
 // Payment - User
 Payment.belongsTo(User, { foreignKey: 'userId' });
+
+// EscrowWallet - User
+EsrowWallet.belongsTo(User, { foreignKey: 'userId' });
+EsrowWallet.belongsTo(JobPosting, { foreignKey: 'jobPostingId' });
+
 
 // CV - User
 CV.belongsTo(User, { foreignKey: 'userId' });
