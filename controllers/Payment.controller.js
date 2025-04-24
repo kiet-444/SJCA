@@ -221,7 +221,4 @@ const paymentHistory = async (req, res) => {
     }
 };
 
-
-
-
 module.exports = { createPayment, paymentCallback, releasePayment, getEscrowWallet, paymentHistory};
