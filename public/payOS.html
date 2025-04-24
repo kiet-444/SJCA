@@ -1,0 +1,68 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test PayOS Payment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 32px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .button:hover {
+            background-color: #45a049;
+        }
+
+        .message {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>PayOS Payment Test</h1>
+    <p>Click the button below to initiate the payment process.</p>
+    
+
+    <button class="button" onclick="initiatePayment()">Proceed to Payment</button>
+
+    <div class="message" id="message"></div>
+
+    <script>
+       
+        async function initiatePayment() {
+            try {
+                const response = await fetch('http://localhost:8080/api/payment/test-payos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                const data = await response.json();
+                if (response.ok && data.checkoutUrl) {
+                    // Redirect the user to the PayOS payment page
+                    window.location.href = data.checkoutUrl;
+                } else {
+                    // Handle error if checkoutUrl is not received
+                    document.getElementById('message').innerText = 'Failed to generate payment link. Please try again.';
+                }
+            } catch (error) {
+                console.error('Error initiating payment:', error);
+                document.getElementById('message').innerText = 'An error occurred while initiating the payment. Please try again.';
+            }
+        }
+    </script>
+</body>
+</html> -->
