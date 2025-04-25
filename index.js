@@ -24,6 +24,9 @@
     const ReviewRouter = require('./routers/review.router')
     const MediaRouter = require('./routers/media.router')
     
+    
+    
+
 
     const app = express();
 
@@ -40,6 +43,54 @@
 
     app.use(bodyParser.urlencoded({ extended: true }));
     app.use(bodyParser.json());
+    
+    app.post('/callback', async (req, res) => {
+      try {
+          const { data } = req.body;
+  
+          if (data.code === '00') {
+              const orderCode = String(data.orderCode);
+              const escrowWallet = await EscrowWallet.findOne({ where: { orderCode } });
+  
+              if (escrowWallet) {
+                  await escrowWallet.update({
+                      balance: parseFloat(escrowWallet.balance) + parseFloat(data.amount),
+                  });
+  
+                  const jobGroup = await JobGroup.findOne({
+                      where: { id: escrowWallet.jobGroupId, userId: escrowWallet.userId },
+                  });
+  
+                  if (jobGroup) {
+                      await jobGroup.update({
+                          isPaid: true,
+                          status: 'inactive',
+                      });
+  
+                      try {
+                          await Payment.create({
+                              orderCode: escrowWallet.orderCode,
+                              description: 'Thanh toán JobGroup',
+                              employerId: escrowWallet.userId,
+                              jobGroupId: jobGroup.id,
+                              amount: parseFloat(data.amount),
+                              status: 'HELD',
+                          });
+                          console.log('Payment created successfully');
+                      } catch (err) {
+                          console.error('Error creating payment:', err);
+                      }
+                  }
+              }
+          }
+  
+          res.status(200).send("OK");
+      } catch (error) {
+          console.error(error);
+          res.status(500).send("Lỗi xử lý callback từ PayOS");
+      }
+  });
+
 
     const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css"
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
@@ -58,6 +109,7 @@
     app.use('/api/complaints', ComplaintRouter);
     app.use('/api/reviews', ReviewRouter);
     app.use('/api/payment', PaymentRouter);
+    
 
     // app.post('/api/webhook/payos', async (req, res) => {
     //     const JobGroup = require('./models/JobGroup');
