@@ -42,7 +42,20 @@ sequelize.sync({ alter: true })
   });
 
 
- module.exports = sequelize;
+ module.exports =  sequelize;
+//  {
+//    up: async (queryInterface, Sequelize) => {
+//      await queryInterface.removeConstraint('JobExecute', 'job_execute_user_id');
+//    },
+//    down: async (queryInterface, Sequelize) => {
+//      await queryInterface.addConstraint('JobExecute', {
+//        fields: ['userId'],
+//        type: 'unique',
+//        name: 'job_execute_user_id',
+//      });
+//    }
+   
+//  };
 
 
 
