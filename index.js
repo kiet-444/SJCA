@@ -6,6 +6,10 @@
     const multer = require('multer');
     const storage = multer.memoryStorage();
     const upload = multer({ storage });
+    const  EscrowWallet  = require('./models/EscrowWallet');
+    const  Payment  = require('./models/Payment');
+    const  JobGroup = require('./models/JobGroup');
+
 
     const cors = require('cors');
   
@@ -24,10 +28,6 @@
     const ReviewRouter = require('./routers/review.router')
     const MediaRouter = require('./routers/media.router')
     
-    
-    
-
-
     const app = express();
 
     app.use(cors({
@@ -51,6 +51,11 @@
           if (data.code === '00') {
               const orderCode = String(data.orderCode);
               const escrowWallet = await EscrowWallet.findOne({ where: { orderCode } });
+              if (!escrowWallet) {
+                console.error('EscrowWallet not found for orderCode:', orderCode);
+            } else {
+                console.log('EscrowWallet found:', escrowWallet);
+            }
   
               if (escrowWallet) {
                   await escrowWallet.update({
