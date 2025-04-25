@@ -29,29 +29,29 @@ const { verifyToken, isAdmin, isWorkerOrEmployer } = require("../middleware/auth
  */
 router.post("/create", verifyToken, PaymentController.createPayment);
 
-/**
- * @swagger
- * /payment/callback:
- *   post:
- *     summary: Xu ly payment
- *     tags: [Payment]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/Payment'
- *     responses:
- *       200:
- *         description: Payment created successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Payment'
- *       500:
- *         description: Đã xảy ra lỗi
- */
-router.post("/callback", PaymentController.paymentCallback);
+// /**
+//  * @swagger
+//  * /payment/callback:
+//  *   post:
+//  *     summary: Xu ly payment
+//  *     tags: [Payment]
+//  *     requestBody:
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             $ref: '#/components/schemas/Payment'
+//  *     responses:
+//  *       200:
+//  *         description: Payment created successfully
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               $ref: '#/components/schemas/Payment'
+//  *       500:
+//  *         description: Đã xảy ra lỗi
+//  */
+// router.post("/callback", PaymentController.paymentCallback);
 
 /**
  * @swagger
