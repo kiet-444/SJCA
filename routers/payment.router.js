@@ -98,7 +98,7 @@ router.get("/paymentHistory", verifyToken, PaymentController.paymentHistory);
 /**
  * @swagger
  * /payment/escrowWallet:
- *   post:
+ *   get:
  *     summary: Lý liệu payment
  *     tags: [Payment]
  *     requestBody:
@@ -117,7 +117,7 @@ router.get("/paymentHistory", verifyToken, PaymentController.paymentHistory);
  *       500:
  *         description: Đã xảy ra lỗi
  */
-router.post("/escrowWallet", verifyToken, isWorkerOrEmployer, PaymentController.getEscrowWallet);
+router.get("/escrowWallet", verifyToken, isWorkerOrEmployer, PaymentController.getEscrowWallet);
 
 // /**
 //  *  @swagger

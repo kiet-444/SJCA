@@ -7,6 +7,7 @@ const JobExecute = require('../models/JobExecute');
 const Payment = require('../models/Payment');
 const PayOS = require('@payos/node');
 const { sequelize } = require('../models'); 
+const { Op } = require('sequelize');
 
 dotenv.config();
 const payos = new PayOS(
@@ -69,54 +70,119 @@ const createPayment = async (req, res) => {
 };
 
 // Xử lý callback từ PayOS khi thanh toán thành công
+// const paymentCallback = async (req, res) => {
+//     try {
+//         const { data } = req.body;
+
+//         await Payment.create({
+//             orderCode: escrowWallet.orderCode,
+//             description: 'Thanh toán JobGroup',
+//             employerId: escrowWallet.userId,
+//             jobGroupId: jobGroup.id,
+//             amount: parseFloat(data.amount),
+//             status: 'HELD'
+//         }, { transaction });
+
+//     if (data.code === '00') {
+//         const orderCode = String(data.orderCode);  // ép chuỗichuỗi
+//         const escrowWallet = await EscrowWallet.findOne({
+//             where: { orderCode }
+//         });
+
+//         if (escrowWallet) {
+//             await escrowWallet.update({
+//             balance: parseFloat(escrowWallet.balance) + parseFloat(data.amount) //ep kieu balance
+//         });
+        
+//         const jobGroup = await JobGroup.findOne({
+//             where: { id: escrowWallet.jobGroupId, userId: escrowWallet.userId }
+//         });
+
+//         if (jobGroup) {
+//             await jobGroup.update({
+//                 isPaid: true,
+//                 status: 'inactive'
+//             });
+
+//             // try {
+//             //     await Payment.create({
+//             //         orderCode: escrowWallet.orderCode,
+//             //         description: 'Thanh toán JobGroup',
+//             //         employerId: escrowWallet.userId,
+//             //         jobGroupId: jobGroup.id,
+//             //         amount: parseFloat(data.amount),
+//             //         status: 'HELD'
+//             //     });
+//             //     console.log('Payment created successfully');
+//             // } catch (err) {
+//             //     console.error('Error creating payment:', err);
+//             // }
+
+//         }
+//     }
+// }
+//         res.status(200).send("OK");
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).send("Lỗi xử lý callback từ PayOS");
+//     }
+// };
+
 const paymentCallback = async (req, res) => {
     try {
         const { data } = req.body;
+        const orderCode = String(data.orderCode);
 
-    if (data.code === '00') {
-        const orderCode = String(data.orderCode);  // ép chuỗichuỗi
         const escrowWallet = await EscrowWallet.findOne({
             where: { orderCode }
         });
 
-        if (escrowWallet) {
-            await escrowWallet.update({
-            balance: parseFloat(escrowWallet.balance) + parseFloat(data.amount) //ep kieu balance
-        });
-        
-        const jobGroup = await JobGroup.findOne({
-            where: { id: escrowWallet.jobGroupId, userId: escrowWallet.userId }
-        });
+        if (!escrowWallet) {
+            return res.status(400).send("EscrowWallet không tìm thấy.");
+        }
 
-        if (jobGroup) {
+        if (data.code === '00') {
+            // Cập nhật số dư của escrowWallet
+            await escrowWallet.update({
+                balance: parseFloat(escrowWallet.balance) + parseFloat(data.amount)
+            });
+
+            const jobGroup = await JobGroup.findOne({
+                where: { id: escrowWallet.jobGroupId, userId: escrowWallet.userId }
+            });
+
+            if (!jobGroup) {
+                return res.status(400).send("Không tìm thấy JobGroup.");
+            }
+
+            // Cập nhật trạng thái jobGroup
             await jobGroup.update({
                 isPaid: true,
                 status: 'inactive'
             });
 
-            try {
-                await Payment.create({
-                    orderCode: escrowWallet.orderCode,
-                    description: 'Thanh toán JobGroup',
-                    employerId: escrowWallet.userId,
-                    jobGroupId: jobGroup.id,
-                    amount: parseFloat(data.amount),
-                    status: 'HELD'
-                });
-                console.log('Payment created successfully');
-            } catch (err) {
-                console.error('Error creating payment:', err);
-            }
+            // Tạo payment
+            await Payment.create({
+                orderCode: escrowWallet.orderCode,
+                description: 'Thanh toán JobGroup',
+                employerId: escrowWallet.userId,
+                jobGroupId: jobGroup.id,
+                amount: parseFloat(data.amount),
+                status: 'HELD'
+            });
 
+            console.log('Payment created successfully');
+            return res.status(200).send("OK");
+        } else {
+            return res.status(400).send("Thanh toán không thành công.");
         }
-    }
-}
-        res.status(200).send("OK");
     } catch (error) {
-        console.error(error);
-        res.status(500).send("Lỗi xử lý callback từ PayOS");
+        console.error("Lỗi xử lý callback từ PayOS:", error);
+        return res.status(500).send("Lỗi xử lý callback từ PayOS");
     }
 };
+
+
 
 // Giải phóng tiền từ Escrow Wallet sang Worker khi công việc hoàn thành
 const releasePayment = async (req, res) => {
@@ -196,25 +262,45 @@ const releasePayment = async (req, res) => {
 
 const getEscrowWallet = async (req, res) => {
     try {
-        const userId = req.userId;
-        const escrowWallet = await EscrowWallet.findOne({ where: { userId } });
+        const userId = req.userId; 
+        
+        const escrowWallet = await EscrowWallet.findOne({
+            where: { userId },
+        });
+
+        // Nếu không tìm thấy ví Escrow
         if (!escrowWallet) {
-            return res.status(404).json({ success: false, message: "Escrow Wallet của người dùng không tìm thấy" });
+            return res.status(404).json({
+                success: false,
+                message: "Escrow Wallet của người dùng không tìm thấy",
+            });
         }
-        return res.status(200).json({ success: true, data: escrowWallet });
+
+        // Trả về số dư trong ví Escrow
+        return res.status(200).json({
+            success: true,
+            balance: escrowWallet.balance,  
+        });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ success: false, message: "Lỗi khi tìm thấy lịch sử giao dịch" });
+        return res.status(500).json({
+            success: false,
+            message: "Lỗi khi tìm thấy ví Escrow",
+        });
     }
 };
+
 const paymentHistory = async (req, res) => {
     try {
         const userId = req.userId;
+        console.log('User ID:', userId);  
 
         const payments = await Payment.findAll({
-            where: { userId },
-            order: [['createdAt', 'DESC']], 
+            where: { [Op.or]: [{ employerId: userId }, { workerId: userId }] },
+            order: [['createdAt', 'DESC']],
         });
+
+        console.log('Payments:', payments);
 
         if (!payments || payments.length === 0) {
             return res.status(404).json({ success: false, message: "The user has no payment history" });
@@ -226,6 +312,7 @@ const paymentHistory = async (req, res) => {
         return res.status(500).json({ success: false, message: "Wrong when get payment history" });
     }
 };
+
 
 module.exports = { createPayment, 
     paymentCallback, 
