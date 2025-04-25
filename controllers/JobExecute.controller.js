@@ -8,6 +8,17 @@ const JobExecuteController = {
         try {
             const { jobPostingId, userId, assigned_at, checkin_at, checkout_at, status, note, processComplete, work_process,
                    reason ,  } = req.body;
+            const existingJobExecute = await JobExecute.findOne({
+                where: {
+                    jobPostingId,
+                    userId,
+                    assigned_at,
+                },
+            });
+
+            if (existingJobExecute) {
+                return res.status(400).json({ message: 'Job execute already exists' });
+            }
             
             const jobExecute = await JobExecute.create({ jobPostingId, userId, assigned_at, checkin_at, checkout_at, status, note, processComplete, work_process, reason });
             res.status(201).json({ message: 'Job execute sent successfully', jobExecute });

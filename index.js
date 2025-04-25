@@ -59,85 +59,60 @@
     app.use('/api/reviews', ReviewRouter);
     app.use('/api/payment', PaymentRouter);
     
-     app.post('/callback', async (req, res) => {
-      try {
-          const { data } = req.body;
-          const  EscrowWallet  = require('./models/EscrowWallet');
-          const  Payment  = require('./models/Payment');
-          const  JobGroup = require('./models/JobGroup');
+//      app.post('/callback', async (req, res) => {
+//       try {
+//           const { data } = req.body;
+//           const  EscrowWallet  = require('./models/EscrowWallet');
+//           const  Payment  = require('./models/Payment');
+//           const  JobGroup = require('./models/JobGroup');
   
-          if (data.code === '00') {
-              const orderCode = String(data.orderCode);
-              const escrowWallet = await EscrowWallet.findOne({ where: { orderCode } });
-              if (!escrowWallet) {
-                console.error('EscrowWallet not found for orderCode:', orderCode);
-            } else {
-                console.log('EscrowWallet found:', escrowWallet);
-            }
+//           if (data.code === '00') {
+//               const orderCode = String(data.orderCode);
+//               const escrowWallet = await EscrowWallet.findOne({ where: { orderCode } });
+//               if (!escrowWallet) {
+//                 console.error('EscrowWallet not found for orderCode:', orderCode);
+//             } else {
+//                 console.log('EscrowWallet found:', escrowWallet);
+//             }
   
-              if (escrowWallet) {
-                  await escrowWallet.update({
-                      balance: parseFloat(escrowWallet.balance) + parseFloat(data.amount),
-                  });
+//               if (escrowWallet) {
+//                   await escrowWallet.update({
+//                       balance: parseFloat(escrowWallet.balance) + parseFloat(data.amount),
+//                   });
   
-                  const jobGroup = await JobGroup.findOne({
-                      where: { id: escrowWallet.jobGroupId, userId: escrowWallet.userId },
-                  });
+//                   const jobGroup = await JobGroup.findOne({
+//                       where: { id: escrowWallet.jobGroupId, userId: escrowWallet.userId },
+//                   });
   
-                  if (jobGroup) {
-                      await jobGroup.update({
-                          isPaid: true,
-                          status: 'inactive',
-                      });
+//                   if (jobGroup) {
+//                       await jobGroup.update({
+//                           isPaid: true,
+//                           status: 'inactive',
+//                       });
   
-                      try {
-                          await Payment.create({
-                              orderCode: escrowWallet.orderCode,
-                              description: 'Thanh toán JobGroup',
-                              employerId: escrowWallet.userId,
-                              jobGroupId: jobGroup.id,
-                              amount: parseFloat(data.amount),
-                              status: 'HELD',
-                          });
-                          console.log('Payment created successfully');
-                      } catch (err) {
-                          console.error('Error creating payment:', err);
-                      }
-                  }
-              }
-          }
+//                       try {
+//                           await Payment.create({
+//                               orderCode: escrowWallet.orderCode,
+//                               description: 'Thanh toán JobGroup',
+//                               employerId: escrowWallet.userId,
+//                               jobGroupId: jobGroup.id,
+//                               amount: parseFloat(data.amount),
+//                               status: 'HELD',
+//                           });
+//                           console.log('Payment created successfully');
+//                       } catch (err) {
+//                           console.error('Error creating payment:', err);
+//                       }
+//                   }
+//               }
+//           }
   
-          res.status(200).send("OK");
-      } catch (error) {
-          console.error(error);
-          res.status(500).send("Lỗi xử lý callback từ PayOS");
-      }
-  });
-
-    // app.post('/api/webhook/payos', async (req, res) => {
-    //     const JobGroup = require('./models/JobGroup');
-    
-    //     try {
-    //         const data = req.body;
-    //         console.log('Webhook data received:', data); // Log dữ liệu webhook
-    
-    //         const jobGroupId = data.orderCode || data.extraData?.jobGroupId;
-    
-    //         if (!jobGroupId) {
-    //             return res.status(400).json({ message: 'Thiếu jobGroupId trong webhook' });
-    //         }
-    
-    //         if (data.status === 'SUCCESS') {
-    //             await JobGroup.update({ is_paid: true }, { where: { id: jobGroupId } });
-    //             console.log(` Đã xác nhận thanh toán cho JobGroup ID: ${jobGroupId}`);
-    //         }
-    
-    //         res.status(200).json({ message: 'Webhook xử lý thành công' });
-    //     } catch (error) {
-    //         console.error(' Lỗi xử lý webhook PayOS:', error);
-    //         res.status(500).json({ message: 'Webhook xử lý thất bại' });
-    //     }
-    // });
+//           res.status(200).send("OK");
+//       } catch (error) {
+//           console.error(error);
+//           res.status(500).send("Lỗi xử lý callback từ PayOS");
+//       }
+//   });
 
     app.get('/', (req, res) => {
         res.send('Hello, Welcome to our API!');

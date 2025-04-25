@@ -242,7 +242,7 @@ const updateStatusJobGroup = async (req, res) => {
                 where: {
                     jobPostingId: { [Op.in]: jobPostingIds }
                 },
-                attributes: ['JobPosting', 'userId']
+                attributes: ['jobPostingId', 'userId']
             });
 
             const jobExecuteMap = jobPostingIds.reduce((acc, jobPostingId) => {
@@ -264,19 +264,35 @@ const updateStatusJobGroup = async (req, res) => {
             }
 
             // Nếu mọi điều kiện đều OK, update JobExecute
-            await JobExecute.update(
-                {
+            // await JobExecute.update(
+            //     {
+            //         status: "active",
+            //         note: "send when update JobGroup",
+            //         sent_at: new Date()
+            //     },
+            //     {
+            //         where: {
+            //             jobPostingId: { [Op.in]: jobPostingIds },
+            //             status: { [Op.ne]: "active" }
+            //         }   
+            //     }
+            // );
+            for (const jobPostingId of jobPostingIds) {
+                const jobExecutes = await JobExecute.findAll({
+                  where: {
+                    jobPostingId,
+                    status: { [Op.ne]: "active" }
+                  }
+                });
+              
+                await Promise.all(jobExecutes.map(jobExecute =>
+                  jobExecute.update({
                     status: "active",
                     note: "send when update JobGroup",
                     sent_at: new Date()
-                },
-                {
-                    where: {
-                        jobPostingId: { [Op.in]: jobPostingIds },
-                        status: { [Op.ne]: "active" }
-                    }
-                }
-            );
+                  })
+                ));
+              }
         }
 
     await jobGroup.update({ status });
