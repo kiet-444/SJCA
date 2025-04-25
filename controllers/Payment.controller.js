@@ -33,7 +33,7 @@ const createPayment = async (req, res) => {
         
             let total = 0;
             for (const job of jobPostings) {
-                const number_of_person = job.number_of_person || 1; // fallback nếu không có field
+                const number_of_person = job.number_of_person || 1; 
                 total += (job.salary || 0) * number_of_person;
             }
         
@@ -57,6 +57,7 @@ const createPayment = async (req, res) => {
             description: "Thanh toán JobGroup",
             returnUrl: " https://seasonal-job.vercel.app/employer/employer-job-groups",
             cancelUrl: " https://seasonal-job.vercel.app/employer/employer-job-groups",
+            webhookUrl: "https://seasonal-job.vercel.app/callback",
         };
 
         const paymentLink = await payos.createPaymentLink(response);
@@ -68,54 +69,54 @@ const createPayment = async (req, res) => {
 };
 
 // Xử lý callback từ PayOS khi thanh toán thành công
-// const paymentCallback = async (req, res) => {
-//     try {
-//         const { data } = req.body;
+const paymentCallback = async (req, res) => {
+    try {
+        const { data } = req.body;
 
-//     if (data.code === '00') {
-//         const orderCode = String(data.orderCode);  // ép chuỗichuỗi
-//         const escrowWallet = await EscrowWallet.findOne({
-//             where: { orderCode }
-//         });
+    if (data.code === '00') {
+        const orderCode = String(data.orderCode);  // ép chuỗichuỗi
+        const escrowWallet = await EscrowWallet.findOne({
+            where: { orderCode }
+        });
 
-//         if (escrowWallet) {
-//             await escrowWallet.update({
-//             balance: parseFloat(escrowWallet.balance) + parseFloat(data.amount) //ep kieu balance
-//         });
+        if (escrowWallet) {
+            await escrowWallet.update({
+            balance: parseFloat(escrowWallet.balance) + parseFloat(data.amount) //ep kieu balance
+        });
         
-//         const jobGroup = await JobGroup.findOne({
-//             where: { id: escrowWallet.jobGroupId, userId: escrowWallet.userId }
-//         });
+        const jobGroup = await JobGroup.findOne({
+            where: { id: escrowWallet.jobGroupId, userId: escrowWallet.userId }
+        });
 
-//         if (jobGroup) {
-//             await jobGroup.update({
-//                 isPaid: true,
-//                 status: 'inactive'
-//             });
+        if (jobGroup) {
+            await jobGroup.update({
+                isPaid: true,
+                status: 'inactive'
+            });
 
-//             try {
-//                 await Payment.create({
-//                     orderCode: escrowWallet.orderCode,
-//                     description: 'Thanh toán JobGroup',
-//                     employerId: escrowWallet.userId,
-//                     jobGroupId: jobGroup.id,
-//                     amount: parseFloat(data.amount),
-//                     status: 'HELD'
-//                 });
-//                 console.log('Payment created successfully');
-//             } catch (err) {
-//                 console.error('Error creating payment:', err);
-//             }
+            try {
+                await Payment.create({
+                    orderCode: escrowWallet.orderCode,
+                    description: 'Thanh toán JobGroup',
+                    employerId: escrowWallet.userId,
+                    jobGroupId: jobGroup.id,
+                    amount: parseFloat(data.amount),
+                    status: 'HELD'
+                });
+                console.log('Payment created successfully');
+            } catch (err) {
+                console.error('Error creating payment:', err);
+            }
 
-//         }
-//     }
-// }
-//         res.status(200).send("OK");
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).send("Lỗi xử lý callback từ PayOS");
-//     }
-// };
+        }
+    }
+}
+        res.status(200).send("OK");
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Lỗi xử lý callback từ PayOS");
+    }
+};
 
 // Giải phóng tiền từ Escrow Wallet sang Worker khi công việc hoàn thành
 const releasePayment = async (req, res) => {
@@ -227,7 +228,7 @@ const paymentHistory = async (req, res) => {
 };
 
 module.exports = { createPayment, 
-    // paymentCallback, 
+    paymentCallback, 
     releasePayment, 
     getEscrowWallet, 
     paymentHistory};
