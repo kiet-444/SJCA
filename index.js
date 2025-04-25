@@ -6,9 +6,6 @@
     const multer = require('multer');
     const storage = multer.memoryStorage();
     const upload = multer({ storage });
-    const  EscrowWallet  = require('./models/EscrowWallet');
-    const  Payment  = require('./models/Payment');
-    const  JobGroup = require('./models/JobGroup');
 
 
     const cors = require('cors');
@@ -44,9 +41,30 @@
     app.use(bodyParser.urlencoded({ extended: true }));
     app.use(bodyParser.json());
     
-    app.post('/callback', async (req, res) => {
+    const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css"
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+        customCss: '.swagger-ui .opblock .opblock-summary-path-description-wrapper { align-items: center; display: flex; flex-wrap: wrap; gap: 0 10px; padding: 0 10px; width: 100%; }',
+        customCssUrl: CSS_URL,
+    }));
+
+    // Define routes
+    app.use('/api/auth', Auth);
+    app.use('/api/users', UserRouter);
+    app.use('/api/jobGroups', JobGroupRouter);
+    app.use('/api/jobs', JobRouter);
+    app.use('/api/cvs', CVRouter);
+    app.use('/api/applications', ApplicationRouter);
+    app.use('/api/executes', ExecuteRouter);
+    app.use('/api/complaints', ComplaintRouter);
+    app.use('/api/reviews', ReviewRouter);
+    app.use('/api/payment', PaymentRouter);
+    
+     app.post('/callback', async (req, res) => {
       try {
           const { data } = req.body;
+          const  EscrowWallet  = require('./models/EscrowWallet');
+          const  Payment  = require('./models/Payment');
+          const  JobGroup = require('./models/JobGroup');
   
           if (data.code === '00') {
               const orderCode = String(data.orderCode);
@@ -95,26 +113,6 @@
           res.status(500).send("Lỗi xử lý callback từ PayOS");
       }
   });
-
-
-    const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css"
-    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-        customCss: '.swagger-ui .opblock .opblock-summary-path-description-wrapper { align-items: center; display: flex; flex-wrap: wrap; gap: 0 10px; padding: 0 10px; width: 100%; }',
-        customCssUrl: CSS_URL,
-    }));
-
-    // Define routes
-    app.use('/api/auth', Auth);
-    app.use('/api/users', UserRouter);
-    app.use('/api/jobGroups', JobGroupRouter);
-    app.use('/api/jobs', JobRouter);
-    app.use('/api/cvs', CVRouter);
-    app.use('/api/applications', ApplicationRouter);
-    app.use('/api/executes', ExecuteRouter);
-    app.use('/api/complaints', ComplaintRouter);
-    app.use('/api/reviews', ReviewRouter);
-    app.use('/api/payment', PaymentRouter);
-    
 
     // app.post('/api/webhook/payos', async (req, res) => {
     //     const JobGroup = require('./models/JobGroup');
