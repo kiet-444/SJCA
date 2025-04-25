@@ -33,29 +33,15 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
     }
 });
 
-sequelize.sync({ alter: true })
-  .then(() => {
-    console.log('All models were synchronized successfully.');
-  })
-  .catch((error) => {
-    console.error('Error syncing models:', error);
-  });
+// sequelize.sync({ alter: true })
+//   .then(() => {
+//     console.log('All models were synchronized successfully.');
+//   })
+//   .catch((error) => {
+//     console.error('Error syncing models:', error);
+//   });
 
 
  module.exports =  sequelize;
-//  {
-//    up: async (queryInterface, Sequelize) => {
-//      await queryInterface.removeConstraint('JobExecute', 'job_execute_user_id');
-//    },
-//    down: async (queryInterface, Sequelize) => {
-//      await queryInterface.addConstraint('JobExecute', {
-//        fields: ['userId'],
-//        type: 'unique',
-//        name: 'job_execute_user_id',
-//      });
-//    }
-   
-//  };
-
 
 

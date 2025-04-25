@@ -7,16 +7,17 @@ const Payment = sequelize.define("Payment", {
         type: DataTypes.TEXT,
         allowNull: true,
     },
-    employerId: { type: DataTypes.UUID, allowNull: false },
-    workerId: { type: DataTypes.UUID, allowNull: true },
-    jobGroupId: { type: DataTypes.UUID, allowNull: false },
-    jobId: { type: DataTypes.UUID, allowNull: true }, // Liên kết công việc
+    employerId: { type: DataTypes.INTEGER, allowNull: false },
+    workerId: { type: DataTypes.INTEGER, allowNull: true },
+    jobGroupId: { type: DataTypes.INTEGER, allowNull: false },
+    jobId: { type: DataTypes.INTEGER, allowNull: true }, // Liên kết công việc
     amount: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
     status: { 
         type: DataTypes.ENUM( "PENDING", "HELD", "RELEASED", "CANCELLED"), 
         defaultValue: "PENDING"
     }
 },{
+    tableName: 'payment',
     timestamps: true
 }
 );
