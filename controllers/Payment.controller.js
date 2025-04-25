@@ -57,7 +57,7 @@ const createPayment = async (req, res) => {
             description: "Thanh toán JobGroup",
             returnUrl: " https://seasonal-job.vercel.app/employer/employer-job-groups",
             cancelUrl: " https://seasonal-job.vercel.app/employer/employer-job-groups",
-            webhookUrl: "https://seasonal-job.vercel.app/callback",
+            webhookUrl: "https://seasonal-job.vercel.app/api/payment/callback",
         };
 
         const paymentLink = await payos.createPaymentLink(response);
