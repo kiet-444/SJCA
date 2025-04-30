@@ -277,22 +277,43 @@ const updateStatusJobGroup = async (req, res) => {
             //         }   
             //     }
             // );
-            for (const jobPostingId of jobPostingIds) {
-                const jobExecutes = await JobExecute.findAll({
-                  where: {
-                    jobPostingId,
-                    status: { [Op.ne]: "active" }
-                  }
-                });
+            // for (const jobPostingId of jobPostingIds) {
+            //     const jobExecutes = await JobExecute.findAll({
+            //       where: {
+            //         jobPostingId,
+            //         status: { [Op.ne]: "active" }
+            //       }
+            //     });
               
-                await Promise.all(jobExecutes.map(jobExecute =>
-                  jobExecute.update({
-                    status: "active",
-                    note: "send when update JobGroup",
+            //     await Promise.all(jobExecutes.map(jobExecute =>
+            //       jobExecute.update({
+            //         status: "active",
+            //         note: "send when update JobGroup",
+            //         sent_at: new Date()
+            //       })
+            //     ));
+            //   }
+
+            for (const jobPostingId of jobPostingIds) {
+                const assignedWorkers = await JobExecute.findAll({
+                    where: { jobPostingId, status: 'active' },
+                    attributes: ['userId']
+                });
+
+                if (assignedWorkers.length === 0) {
+                    return res.status(400).json({ message: `No active workers assigned to JobPosting ${jobPostingId}` });
+                }
+
+                const newJobExecutes = assignedWorkers.map(worker => ({
+                    userId: worker.userId,
+                    jobPostingId: jobPostingId,
+                    status: 'active',
+                    note: 'Cloned from template when JobGroup started',
                     sent_at: new Date()
-                  })
-                ));
-              }
+                }));
+
+                await JobExecute.bulkCreate(newJobExecutes);
+            }
         }
 
     await jobGroup.update({ status });

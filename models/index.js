@@ -9,6 +9,7 @@ const Application = require('./Application');
 const ComplaintRecord = require('./Complaint');
 const Review = require('./Review');
 const EsrowWallet = require('./EscrowWallet');
+const Transaction = require('./Transaction');
 
 // // User - Project
 // User.hasMany(JobGroup, { foreignKey: 'userId' });
@@ -90,6 +91,10 @@ CV.belongsTo(User, { foreignKey: 'userId' });
 User.hasMany(Review, { foreignKey: 'userId', onDelete: 'CASCADE' });
 Review.belongsTo(User, { foreignKey: 'userId' });
 
+// Transaction - EscrowWallet
+Transaction.belongsTo(EsrowWallet, { foreignKey: 'escrowWalletId' });
+EsrowWallet.hasMany(Transaction, { foreignKey: 'escrowWalletId' });
+
 
 
 module.exports = {
@@ -102,5 +107,7 @@ module.exports = {
     CV,
     Application,
     ComplaintRecord,
-    Review
+    Review,
+    Transaction,
+    EsrowWallet
 };
