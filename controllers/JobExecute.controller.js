@@ -80,13 +80,10 @@ const JobExecuteController = {
     async getJobExecuteByJobPostingIdWorker(req, res) {
         try {
             const { jobPostingId, userId } = req.params;
-        
-            // Kiểm tra nếu jobPostingId hoặc userId thiếu
             if (!jobPostingId || !userId) {
                 return res.status(400).json({ message: 'JobPostingId and UserId are required' });
             }
         
-            // Lấy tất cả job execute của worker (userId) trong jobPostingId
             const jobExecutes = await JobExecute.findAll({
                 where: {
                     jobPostingId,
