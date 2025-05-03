@@ -117,26 +117,52 @@ const updateUser = async (req, res) => {
         const userId = req.userId;
         const { password, ...updates } = req.body;
 
+
         const user = await User.findByPk(userId);
+
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-       
+
+
         if (password) {
             const salt = await bcrypt.genSalt(10);
             user.password = await bcrypt.hash(password, salt);
             await user.save();
             return res.status(200).json({ message: 'Password updated successfully' });
         }
-        
+
+
+
 
         if (user.role === 'employer') {
-            const { companyName, avatar, address, phoneNumber } = updates;
-            Object.assign(user, { companyName, avatar, address, phoneNumber });
+            const { companyName, avatar, dateOfBirth, address, phoneNumber, description } = updates;
+            Object.assign(user, {
+                companyName,
+                avatar,
+                dateOfBirth,
+                address,
+                phoneNumber,
+                description: description ? description.trim() : null, 
+            });
         } else {
-            const { fullname, avatar, birth, gender, address, phoneNumber } = updates;
-            Object.assign(user, { fullname, avatar, birth, gender, address, phoneNumber });
+            const { fullname, avatar, dateOfBirth, gender, address, phoneNumber, description } = updates;
+
+
+        
+            const normalizedGender = gender ? gender.toLowerCase() : null;
+
+
+            Object.assign(user, {
+                fullName: fullname || user.fullName,
+                avatar,
+                dateOfBirth,
+                sex: normalizedGender,
+                address,
+                phoneNumber,
+                description: description ? description.trim() : null, 
+            });
         }
 
         const updatedUser = await user.save();

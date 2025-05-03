@@ -5,7 +5,11 @@ const JobGroup = require('../models/JobGroup');
 const JobPosting = require('../models/JobPosting');
 const JobExecute = require('../models/JobExecute');
 const Payment = require('../models/Payment');
+const Transaction = require('../models/Transaction');
 const PayOS = require('@payos/node');
+
+const nodemailer = require('nodemailer');
+
 const { sequelize } = require('../models'); 
 const { Op } = require('sequelize');
 
@@ -37,6 +41,8 @@ const createPayment = async (req, res) => {
                 const number_of_person = job.number_of_person || 1; 
                 total += (job.salary || 0) * number_of_person;
             }
+
+            total += 50000;
         
             return total;
         };
@@ -164,7 +170,7 @@ const paymentCallback = async (req, res) => {
             // Tạo payment
             await Payment.create({
                 orderCode: escrowWallet.orderCode,
-                description: 'Thanh toán JobGroup',
+                description: 'Payment JobGroup',
                 employerId: escrowWallet.userId,
                 jobGroupId: jobGroup.id,
                 amount: parseFloat(data.amount),
@@ -232,29 +238,50 @@ const releasePayment = async (req, res) => {
             // Cập nhật số dư tài khoản nhân viên
             await escrowWallet.update({ balance: escrowWallet.balance + amountToTransfer }, { transaction });
 
-            await Payment.create({
-                orderCode: escrowWalletEmployer.orderCode,
-                description: `Release payment for jobPosting ${jobPosting.id}`,
-                employerId: employerId,
-                workerId: user.id,
-                jobGroupId: jobPosting.jobGroupId,
-                jobId: jobPosting.id,
+            await Transaction.create({
+                senderId: employerId,
+                receiverId: user.id,
                 amount: amountToTransfer,
-                status: 'RELEASED'
-            }, { transaction });
+                balance: escrowWallet.balance + amountToTransfer,
+                description: "Luong cong viec",
+                status: "COMPLETED",
+            }, {transaction})
         }
 
         if (escrowWalletEmployer.balance < totalAmountToDeduct) {
             return res.status(400).json({ success: false, message: "Số dư của Escrow Wallet không đủ" });
         }
+//send mail
+        await sendEmail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'Thông báo trừ tiền trước khi thanh toán cho nhân viên',
+            html: `
+              <p>Bạn sắp thực hiện thanh toán cho công việc "${jobPosting.title}".</p>
+              <p>Tổng số tiền sẽ bị trừ: <strong>${totalAmountToDeduct.toLocaleString()} VND</strong></p>
+              <ul>
+                ${users.map(user => `<li>${user.fullname} (ID: ${user.id})</li>`).join('')}
+              </ul>
+            `
+          });
 
+        
         // Trừ tiền từ nhà tuyển dụng
         await escrowWalletEmployer.update({ balance: escrowWalletEmployer.balance - totalAmountToDeduct }, { transaction });
 
-        await transaction.commit(); // Xác nhận thay đổi
+        await Transaction.create({
+            senderId: employerId,
+            receiverId: null,
+            amount: totalAmountToDeduct,
+            balance: escrowWalletEmployer.balance - totalAmountToDeduct,
+            description: "Pay for job",
+            status: "COMPLETED",
+        }, {transaction});
+
+        await transaction.commit(); 
         return res.status(200).json({ success: true, message: "success when release payment" });
     } catch (error) {
-        await transaction.rollback(); // Hoàn tác nếu có lỗi
+        await transaction.rollback();
         console.error(error);
         return res.status(500).json({ success: false, message: "Wrong when release payment" });
     }

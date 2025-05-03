@@ -90,6 +90,33 @@ router.get('/job-execute/job-posting/:jobPostingId', verifyToken, JobExecuteCont
 
 /**
  * @swagger
+ * /job-execute/job-posting/{jobPostingId}/{userId}:
+ *   get:
+ *     summary: Get job executions by jobPostingId and userId
+ *     tags: [Job Execute]
+ *     parameters:
+ *       - in: path
+ *         name: jobPostingId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Job executions retrieved successfully
+ *       404:
+ *         description: Job execution not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/job-execute/job-posting/:jobPostingId/:userId', verifyToken, JobExecuteController.getJobExecuteByJobPostingIdWorker);
+
+/**
+ * @swagger
  * /job-execute/{id}:
  *   patch:
  *     summary: Update a job execution (with optional image upload)

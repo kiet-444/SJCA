@@ -12,14 +12,6 @@ const ComplaintRecord = sequelize.define('ComplaintRecord', {
             key: 'id',
         },
     },
-    jobPostingId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: JobPosting,
-            key: 'id',
-        },
-    },
     image: {
         type: DataTypes.STRING,
         allowNull: true,

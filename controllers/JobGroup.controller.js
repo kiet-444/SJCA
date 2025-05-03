@@ -166,60 +166,75 @@ const updateStatusJobGroup = async (req, res) => {
         const { id } = req.params;
         const { status } = req.body;
 
+
         const jobGroup = await JobGroup.findByPk(id);
         if (!jobGroup) {
             return res.status(404).json({ message: 'JobGroup not found' });
         }
 
+
         // Nếu chuyển sang "completed", phải kiểm tra job hoàn thành
         // if (status === "completed") {
         //     const jobPostings = await JobPosting.findAll({ where: { jobGroupId: id } });
 
+
         //     if (jobPostings.length === 0) {
         //         return res.status(400).json({ message: "No JobPosting in this group" });
         //     }
-            
+
+
+
 
         //     const allCompleted = jobPostings.every(job => job.status === "completed");  
+
 
         //     if (!allCompleted) {
         //         return res.status(400).json({ message: "All JobPosting in 'completed' when update JobGroup" });
         //     }
         // }
 
+
         const end_date = new Date(jobGroup.end_date);
         const today = new Date();
 
-            end_date.setHours (0, 0, 0, 0);
-            today.setHours (0, 0, 0, 0);
 
-            if (end_date.getTime() < today.getTime()) {
-                await jobGroup.update({ status: "completed" });
-                return res.status(400).json({ message: "JobGroup has expired and was set to completed automatically." });
-            }
+        end_date.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+
+
+        if (end_date.getTime() < today.getTime()) {
+            await jobGroup.update({ status: "completed" });
+            return res.status(400).json({ message: "JobGroup has expired and was set to completed automatically." });
+        }
+
 
         // Nếu chuyển sang "active", phải kiểm tra đã thanh toán + có job
         if (status === "active") {
-            if (!jobGroup.isPaid) { 
+            if (!jobGroup.isPaid) {
                 return res.status(400).json({ message: "JobGroup is not payment" });
             }
+
 
             const jobPostings = await JobPosting.findAll({
                 where: { jobGroupId: id },
                 attributes: ['id', 'salary']
             });
 
+
             if (jobPostings.length === 0) {
                 return res.status(400).json({ message: "JobGroup enough job posting" });
             }
+
 
             const totalAmount = jobPostings.reduce((sum, job) => sum + job.salary, 0);
             if (totalAmount <= 0) {
                 return res.status(400).json({ message: "No valid salary in JobGroup" });
             }
 
+
             const jobPostingIds = jobPostings.map(job => job.id);
-            
+
+
             // Bắt >= 1 work in job posting
             // for (const jobPostingId of jobPostingIds) {
             //     const assignedCount = await JobExecute.count({
@@ -228,9 +243,11 @@ const updateStatusJobGroup = async (req, res) => {
             //             userId: { [Op.ne]: null }
             //         }
             //     });
-            
+
+
             //     console.log(`JobPosting ${jobPostingId} has ${assignedCount} assigned workers`);
-            
+
+
             //     if (assignedCount === 0) {
             //         return res.status(400).json({
             //             message: `JobPosting ${jobPostingId} does not have any assigned workers.`
@@ -240,29 +257,52 @@ const updateStatusJobGroup = async (req, res) => {
             // Bắt >= 1 work in job posting
             const jobExecutes = await JobExecute.findAll({
                 where: {
-                    jobPostingId: { [Op.in]: jobPostingIds }
-                },
-                attributes: ['jobPostingId', 'userId']
+                    jobPostingId: { [Op.in]: jobPostingIds },
+                    status: 'active'
+                }
             });
 
-            const jobExecuteMap = jobPostingIds.reduce((acc, jobPostingId) => {
-                acc[jobPostingId] = [];
-                return acc;
-            }, {});
-            
-            jobExecutes.forEach(jobExecute => {
-                jobExecuteMap[jobExecute.jobPostingId].push(jobExecute.userId);
-            });
-            
-            for (const jobPostingId of jobPostingIds) {
-                const assignedCount = jobExecuteMap[jobPostingId].length;
-                if (assignedCount === 0) {
-                    return res.status(400).json({
-                        message: `JobPosting ${jobPostingId} does not have any assigned workers.`
-                    });
-                }
+
+            const listWorker = await Application.findAll({
+                where: {
+                    jobPostingId: { [Op.in]: jobPostingIds },
+                    status: 'approved'
+                },
+                attributes: ['jobPostingId'],
+                include: [{
+                    model: CV,
+                    attributes: ['userId']
+                }]
+            })
+
+
+            const newJobExecutes = [];
+
+
+            for (const jobExe of jobExecutes) {
+                const matched = listWorker
+                    .filter(worker => worker.jobPostingId === jobExe.jobPostingId)
+                    .map(worker => ({
+                        jobPostingId: jobExe.jobPostingId,
+                        userId: worker.CV.userId,
+                        status: 'active',
+                        processComplete: 0,
+                        assigned_at: jobExe.assigned_at,
+                        note: jobExe.note,
+                        work_process: jobExe.work_process,
+                        createdAt: new Date(),
+                        updatedAt: new Date()
+                    }));
+
+
+                newJobExecutes.push(...matched);
             }
 
+
+            // Kiểm tra trước khi insert
+            if (newJobExecutes.length > 0) {
+                await JobExecute.bulkCreate(newJobExecutes);
+            }
             // Nếu mọi điều kiện đều OK, update JobExecute
             // await JobExecute.update(
             //     {
@@ -274,28 +314,56 @@ const updateStatusJobGroup = async (req, res) => {
             //         where: {
             //             jobPostingId: { [Op.in]: jobPostingIds },
             //             status: { [Op.ne]: "active" }
-            //         }   
+            //         }  
             //     }
             // );
-            for (const jobPostingId of jobPostingIds) {
-                const jobExecutes = await JobExecute.findAll({
-                  where: {
-                    jobPostingId,
-                    status: { [Op.ne]: "active" }
-                  }
-                });
-              
-                await Promise.all(jobExecutes.map(jobExecute =>
-                  jobExecute.update({
-                    status: "active",
-                    note: "send when update JobGroup",
-                    sent_at: new Date()
-                  })
-                ));
-              }
+            // for (const jobPostingId of jobPostingIds) {
+            //     const jobExecutes = await JobExecute.findAll({
+            //       where: {
+            //         jobPostingId,
+            //         status: { [Op.ne]: "active" }
+            //       }
+            //     });
+
+
+            //     await Promise.all(jobExecutes.map(jobExecute =>
+            //       jobExecute.update({
+            //         status: "active",
+            //         note: "send when update JobGroup",
+            //         sent_at: new Date()
+            //       })
+            //     ));
+            //   }
+
+
+            // for (const jobPostingId of jobPostingIds) {
+            //     const assignedWorkers = await JobExecute.findAll({
+            //         where: { jobPostingId, status: 'active' },
+            //         attributes: ['userId']
+            //     });
+
+
+            //     if (assignedWorkers.length === 0) {
+            //         return res.status(400).json({ message: `No active workers assigned to JobPosting ${jobPostingId}` });
+            //     }
+
+
+            //     const newJobExecutes = assignedWorkers.map(worker => ({
+            //         userId: worker.userId,
+            //         jobPostingId: jobPostingId,
+            //         status: 'active',
+            //         note: 'Cloned from template when JobGroup started',
+            //         sent_at: new Date()
+            //     }));
+
+
+            //     await JobExecute.bulkCreate(newJobExecutes);
+            // }
         }
 
-    await jobGroup.update({ status });
+
+        await jobGroup.update({ status });
+
 
         res.status(200).json({ message: 'JobGroup status updated successfully', data: jobGroup });
     } catch (error) {
@@ -303,6 +371,7 @@ const updateStatusJobGroup = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
 
 
 
