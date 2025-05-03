@@ -7,6 +7,9 @@ const JobExecute = require('../models/JobExecute');
 const Payment = require('../models/Payment');
 const Transaction = require('../models/Transaction');
 const PayOS = require('@payos/node');
+
+const nodemailer = require('nodemailer');
+
 const { sequelize } = require('../models'); 
 const { Op } = require('sequelize');
 
@@ -249,19 +252,20 @@ const releasePayment = async (req, res) => {
             return res.status(400).json({ success: false, message: "Số dư của Escrow Wallet không đủ" });
         }
 //send mail
-        // await sendEmail({
-        //     to: employer.email,
-        //     subject: 'Thông báo trừ tiền trước khi thanh toán cho nhân viên',
-        //     html: `
-        //       <p>Bạn sắp thực hiện thanh toán cho công việc "${jobPosting.title}".</p>
-        //       <p>Tổng số tiền sẽ bị trừ: <strong>${totalAmountToDeduct.toLocaleString()} VND</strong></p>
-        //       <ul>
-        //         ${users.map(user => `<li>${user.fullname} (ID: ${user.id})</li>`).join('')}
-        //       </ul>
-        //     `
-        //   });
-          
+        await sendEmail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'Thông báo trừ tiền trước khi thanh toán cho nhân viên',
+            html: `
+              <p>Bạn sắp thực hiện thanh toán cho công việc "${jobPosting.title}".</p>
+              <p>Tổng số tiền sẽ bị trừ: <strong>${totalAmountToDeduct.toLocaleString()} VND</strong></p>
+              <ul>
+                ${users.map(user => `<li>${user.fullname} (ID: ${user.id})</li>`).join('')}
+              </ul>
+            `
+          });
 
+        
         // Trừ tiền từ nhà tuyển dụng
         await escrowWalletEmployer.update({ balance: escrowWalletEmployer.balance - totalAmountToDeduct }, { transaction });
 
@@ -274,10 +278,10 @@ const releasePayment = async (req, res) => {
             status: "COMPLETED",
         }, {transaction});
 
-        await transaction.commit(); // Xác nhận thay đổi
+        await transaction.commit(); 
         return res.status(200).json({ success: true, message: "success when release payment" });
     } catch (error) {
-        await transaction.rollback(); // Hoàn tác nếu có lỗi
+        await transaction.rollback();
         console.error(error);
         return res.status(500).json({ success: false, message: "Wrong when release payment" });
     }
