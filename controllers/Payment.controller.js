@@ -276,9 +276,15 @@ const releasePayment = async (req, res) => {
             balance: parseFloat(escrowWalletEmployer.balance) - totalAmountToDeduct
         }, { transaction });
 
-        await transporter.sendEmail({
+        const employer = await User.findByPk(employerId);
+        if (!employer) {
+            await transaction.rollback();
+            return res.status(404).json({ success: false, message: "Không tìm thấy nhà tuyển dụng" });
+        }
+
+        await transporter.sendMail({
             from: process.env.EMAIL_USER,
-            to: email,
+            to: employer.email,
             subject: 'Thông báo trừ tiền trước khi thanh toán cho nhân viên',
             html: `
               <p>Bạn sắp thực hiện thanh toán cho công việc "${jobPosting.title}".</p>
