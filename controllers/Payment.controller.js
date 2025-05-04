@@ -292,11 +292,6 @@ const releasePayment = async (req, res) => {
               <ul>
                 <li>Tranfer tiền cho người dùng: <strong>${totalAmountToDeduct.toLocaleString()} VND</strong></li>
               </ul>
-              <p>So lượng người dùng: <strong>${userIds.length}</strong></p>
-              <p>Người dùng:</p>
-              <ul>
-                ${users.map(user => `<li>${user.fullname} (ID: ${user.id})</li>`).join('')}
-              </ul>
               <p>Thống báo trang thái:</p>
               <p>Tổng số tiền sẽ bị trừ: <strong>${totalAmountToDeduct.toLocaleString()} VND</strong></p>
               <ul>
@@ -304,6 +299,31 @@ const releasePayment = async (req, res) => {
               </ul>
             `
           });
+
+          const worker = await User.findByPk(userIds[0]);
+          if (!worker) {
+            await transaction.rollback();
+            return res.status(404).json({ success: false, message: "Không tìm thấy người dùng" });
+          }
+
+          await transporter.sendMail({
+              from: process.env.EMAIL_USER,
+              to: worker.email,
+              subject: 'Thanh toán công việc',
+              html: `
+                <p>Thanh toán cho công việc "${jobPosting.title}".</p>
+                <p>Thanh toán:</p>
+                <ul>
+                  <li>Tranfer tiền từ nhà tuyển dụng: <strong>${totalAmountToDeduct.toLocaleString()} VND</strong></li>
+                </ul>
+                <p>Người tuyển dụng:</p>
+                <ul>
+                  <li>${employer.companyName} (ID: ${employer.id})</li>
+                </ul>
+                <p>Thống báo trang thái:</p>
+                <p>Tổng số tiền: <strong>${totalAmountToDeduct.toLocaleString()} VND</strong></p>
+              `
+          })
 
         await transaction.commit();
         return res.status(200).json({ success: true, message: "Giải phóng tiền thành công" });
