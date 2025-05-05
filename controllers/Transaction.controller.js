@@ -2,10 +2,15 @@ const {Transaction } = require('../models');
 
 const getTransaction = async (req, res) => {
     try {
-        const senderId = req.userId;
+        const userId = req.userId;
         
-        const transactions = await Transaction.findOne({
-            where: { senderId },
+        const transactions = await Transaction.findAll({
+            where: {
+                [Op.or]: [
+                    { senderId: userId },
+                    { receiverId: userId }
+                ]
+            },
         });
 
         if (!transactions) {
