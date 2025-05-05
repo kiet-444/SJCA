@@ -207,6 +207,7 @@ const releasePayment = async (req, res) => {
     try {
         const employerId = req.userId;
         const { userIds, jobPostingId } = req.body;
+        const employer = await User.findByPk(employerId);
 
         if (!Array.isArray(userIds) || userIds.length === 0) {
             return res.status(400).json({ success: false, message: "Danh sách người dùng không hợp lệ" });
@@ -216,7 +217,7 @@ const releasePayment = async (req, res) => {
         if (users.length !== userIds.length) {
             return res.status(404).json({ success: false, message: "Một hoặc nhiều người dùng không tìm thấy" });
         }
-       
+
         const jobPosting = await JobPosting.findByPk(jobPostingId, { Transaction });
         if (!jobPosting || jobPosting.status !== 'completed' /*|| jobPosting.number_of_person !== userIds.length*/) {
             return res.status(404).json({ success: false, message: "Công việc không hợp lệ" });
@@ -226,7 +227,6 @@ const releasePayment = async (req, res) => {
         if (!escrowWalletEmployer) {
             return res.status(404).json({ success: false, message: "Escrow Wallet của nhà tuyển dụng không tìm thấy" });
         }
-
         // const totalAmountOnePerson = jobPosting.salary / jobPosting.number_of_person;
         let totalAmountToDeduct = 0;
 
@@ -239,7 +239,7 @@ const releasePayment = async (req, res) => {
 
             const totalProgressComplete = jobExecutes.reduce((sum, jobExe) => {
                 return sum + (jobExe.processComplete || 0); // đảm bảo không bị NaN nếu field null
-              }, 0);
+            }, 0);
 
             // const totalDaySuccess = jobExecutes.filter(jobExecute => jobExecute.status === 'success').length;
             // const amountToTransfer = parseFloat(((totalDaySuccess / jobExecutes.length) * totalAmountOnePerson).toFixed(2));
@@ -268,20 +268,30 @@ const releasePayment = async (req, res) => {
                 amount: amountToTransfer,
                 status: 'COMPLETED'
             }, { Transaction });
+            // const worker = await User.findByPk(userIds[0]);
+            if (worker) {
+                await transporter.sendMail({
+                    from: process.env.EMAIL_USER,
+                    to: user.email,
+                    subject: 'Thanh toán công việc',
+                    html: `
+                  <p>Thanh toán cho công việc "${jobPosting.title}".</p>
+                  <p>Số tiền nhận: <strong>${amountToTransfer.toLocaleString()} VND</strong></p>
+                  <p>Người tuyển dụng: ${employer?.companyName || 'Unknown'} </p>
+                `
+                });
+            }
         }
-
         if (escrowWalletEmployer.balance < totalAmountToDeduct) {
             // await Transaction.rollback();
             return res.status(400).json({ success: false, message: "Số dư không đủ trong Escrow Wallet" });
         }
-
         await escrowWalletEmployer.update({
             balance: parseFloat(escrowWalletEmployer.balance) - totalAmountToDeduct
         }, { Transaction });
 
         // await Transaction.commit();
 
-        const employer = await User.findByPk(employerId);
         if (employer) {
             await transporter.sendMail({
                 from: process.env.EMAIL_USER,
@@ -293,21 +303,6 @@ const releasePayment = async (req, res) => {
                   <ul>
                     <li>Transfer tiền cho người dùng: <strong>${totalAmountToDeduct.toLocaleString()} VND</strong></li>
                   </ul>
-                  <p>SJCP gửi nhà tuyển dụng: ${employer?.companyName || 'Unknown'}</p>
-                `
-            });
-        }
-
-        const worker = await User.findByPk(userIds[0]);
-        if (worker) {
-            await transporter.sendMail({
-                from: process.env.EMAIL_USER,
-                to: worker.email,
-                subject: 'Thanh toán công việc',
-                html: `
-                  <p>Thanh toán cho công việc "${jobPosting.title}".</p>
-                  <p>Số tiền nhận: <strong>${amountToTransfer.toLocaleString()} VND</strong></p>
-                  <p>Người tuyển dụng: ${employer?.companyName || 'Unknown'}</p>
                 `
             });
         }
