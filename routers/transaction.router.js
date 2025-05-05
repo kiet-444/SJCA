@@ -27,4 +27,31 @@ const { verifyToken } = require("../middleware/auth.middleware");
  */
 router.get("/", verifyToken, TransactionController.getTransaction);
 
+/**
+ *  
+ * @swagger
+ *  /api/transactions:
+ *    post:
+ *      summary: Create a new transaction
+ *      tags: [Transaction]
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/Transaction'
+ *      responses:
+ *        201:
+ *          description: Transaction created successfully
+ *          content:
+ *            application/json:
+ *              schema:
+ *                $ref: '#/components/schemas/Transaction'
+ *        500:
+ *          description: Failed to create transaction
+ *      security:
+ *        - bearerAuth: [] 
+ */
+router.post("/createTransaction", verifyToken, TransactionController.createTransaction);
+
 module.exports = router;

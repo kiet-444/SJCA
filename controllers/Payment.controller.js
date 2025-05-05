@@ -195,17 +195,15 @@ const paymentCallback = async (req, res) => {
         } else {
             return res.status(400).send("Thanh toán không thành công.");
         }
-    } catch (error) {
+    } catch (error) {``
         console.error("Lỗi xử lý callback từ PayOS:", error);
-        return res.status(500).send("Lỗi xử lý callback từ PayOS");
+        return res.status(500).send("Lỗi xử lý callback từ PayOS");``
     }
 };
 
-
-
 // Giải phóng tiền từ Escrow Wallet sang Worker khi công việc hoàn thành
 const releasePayment = async (req, res) => {
-    const transaction = await sequelize.transaction(); // Bắt đầu transaction
+    // const transaction = await sequelize.transaction();
     try {
         const employerId = req.userId;
         const { userIds, jobPostingId } = req.body;
@@ -214,127 +212,116 @@ const releasePayment = async (req, res) => {
             return res.status(400).json({ success: false, message: "Danh sách người dùng không hợp lệ" });
         }
 
-        const users = await User.findAll({ where: { id: userIds } });
+        const users = await User.findAll({ where: { id: userIds }, Transaction });
         if (users.length !== userIds.length) {
             return res.status(404).json({ success: false, message: "Một hoặc nhiều người dùng không tìm thấy" });
         }
-
-        const jobPosting = await JobPosting.findByPk(jobPostingId);
-        if (!jobPosting || jobPosting.status !== 'completed' || jobPosting.number_of_person !== userIds.length) {
+       
+        const jobPosting = await JobPosting.findByPk(jobPostingId, { Transaction });
+        if (!jobPosting || jobPosting.status !== 'completed' /*|| jobPosting.number_of_person !== userIds.length*/) {
             return res.status(404).json({ success: false, message: "Công việc không hợp lệ" });
         }
 
-        const escrowWalletEmployer = await EscrowWallet.findOne({ where: { userId: employerId } });
+        const escrowWalletEmployer = await EscrowWallet.findOne({ where: { userId: employerId }, Transaction });
         if (!escrowWalletEmployer) {
             return res.status(404).json({ success: false, message: "Escrow Wallet của nhà tuyển dụng không tìm thấy" });
         }
-        // Tinh tien nguoi dung
-        const totalAmountOnePerson = jobPosting.salary / jobPosting.number_of_person;
+
+        // const totalAmountOnePerson = jobPosting.salary / jobPosting.number_of_person;
         let totalAmountToDeduct = 0;
 
         for (const user of users) {
-            const jobExecutes = await JobExecute.findAll({ where: { jobPostingId, userId: user.id } });
+            const jobExecutes = await JobExecute.findAll({ where: { jobPostingId, userId: user.id }, Transaction });
 
             if (jobExecutes.length === 0) {
                 return res.status(400).json({ success: false, message: `Không có công việc thực hiện bởi người dùng ${user.id}` });
             }
 
-            const totalDaySuccess = jobExecutes.filter(jobExecute => jobExecute.status === 'success').length;
-            const amountToTransfer = (totalDaySuccess / jobExecutes.length) * totalAmountOnePerson;
+            const totalProgressComplete = jobExecutes.reduce((sum, jobExe) => {
+                return sum + (jobExe.processComplete || 0); // đảm bảo không bị NaN nếu field null
+              }, 0);
+
+            // const totalDaySuccess = jobExecutes.filter(jobExecute => jobExecute.status === 'success').length;
+            // const amountToTransfer = parseFloat(((totalDaySuccess / jobExecutes.length) * totalAmountOnePerson).toFixed(2));
+            const amountToTransfer = parseFloat(((totalProgressComplete / 100) * jobPosting.salary).toFixed(2));
             totalAmountToDeduct += amountToTransfer;
 
-            const escrowWallet = await EscrowWallet.findOne({ where: { userId: user.id } });
+
+            const escrowWallet = await EscrowWallet.findOne({ where: { userId: user.id }, Transaction });
             if (!escrowWallet) {
                 await EscrowWallet.create({
+                    orderCode: Date.now(),
                     userId: user.id,
                     balance: amountToTransfer,
                     jobGroupId: jobPosting.jobGroupId
-                }, { transaction });
+                }, { Transaction });
             } else {
                 await escrowWallet.update({
                     balance: parseFloat(escrowWallet.balance) + amountToTransfer
-                }, { transaction });
+                }, { Transaction });
             }
 
-            // Tạo Transaction record
             await Transaction.create({
-                fromUserId: employerId,
-                toUserId: user.id,
-                jobPostingId,
+                senderId: employerId,
+                receiverId: user.id,
+                // jobPostingId,
                 amount: amountToTransfer,
-                status: 'SUCCESS'
-            }, { transaction });
+                status: 'COMPLETED'
+            }, { Transaction });
         }
 
-        // Trừ tiền khỏi ví ký quỹ của nhà tuyển dụng
         if (escrowWalletEmployer.balance < totalAmountToDeduct) {
-            await transaction.rollback();
+            // await Transaction.rollback();
             return res.status(400).json({ success: false, message: "Số dư không đủ trong Escrow Wallet" });
         }
 
         await escrowWalletEmployer.update({
             balance: parseFloat(escrowWalletEmployer.balance) - totalAmountToDeduct
-        }, { transaction });
+        }, { Transaction });
+
+        // await Transaction.commit();
 
         const employer = await User.findByPk(employerId);
-        if (!employer) {
-            await transaction.rollback();
-            return res.status(404).json({ success: false, message: "Không tìm thấy nhà tuyển dụng" });
+        if (employer) {
+            await transporter.sendMail({
+                from: process.env.EMAIL_USER,
+                to: employer.email,
+                subject: 'Thông báo trừ tiền trước khi thanh toán cho nhân viên',
+                html: `
+                  <p>Bạn sắp thực hiện thanh toán cho công việc "${jobPosting.title}".</p>
+                  <p>Thanh toán:</p>
+                  <ul>
+                    <li>Transfer tiền cho người dùng: <strong>${totalAmountToDeduct.toLocaleString()} VND</strong></li>
+                  </ul>
+                `
+            });
         }
 
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: employer.email,
-            subject: 'Thông báo trừ tiền trước khi thanh toán cho nhân viên',
-            html: `
-              <p>Bạn sắp thực hiện thanh toán cho công việc "${jobPosting.title}".</p>
-              <p>Thanh toán:</p>
-              <ul>
-                <li>Tranfer tiền cho người dùng: <strong>${totalAmountToDeduct.toLocaleString()} VND</strong></li>
-              </ul>
-              <p>Thống báo trang thái:</p>
-              <p>Tổng số tiền sẽ bị trừ: <strong>${totalAmountToDeduct.toLocaleString()} VND</strong></p>
-              <ul>
-                ${users.map(user => `<li>${user.fullname} (ID: ${user.id})</li>`).join('')}
-              </ul>
-            `
-          });
+        const worker = await User.findByPk(userIds[0]);
+        if (worker) {
+            await transporter.sendMail({
+                from: process.env.EMAIL_USER,
+                to: worker.email,
+                subject: 'Thanh toán công việc',
+                html: `
+                  <p>Thanh toán cho công việc "${jobPosting.title}".</p>
+                  <p>Số tiền nhận: <strong>${totalAmountToDeduct.toLocaleString()} VND</strong></p>
+                  <p>Người tuyển dụng: ${employer?.companyName || 'Unknown'} (ID: ${employerId})</p>
+                `
+            });
+        }
 
-          const worker = await User.findByPk(userIds[0]);
-          if (!worker) {
-            await transaction.rollback();
-            return res.status(404).json({ success: false, message: "Không tìm thấy người dùng" });
-          }
-
-          await transporter.sendMail({
-              from: process.env.EMAIL_USER,
-              to: worker.email,
-              subject: 'Thanh toán công việc',
-              html: `
-                <p>Thanh toán cho công việc "${jobPosting.title}".</p>
-                <p>Thanh toán:</p>
-                <ul>
-                  <li>Tranfer tiền từ nhà tuyển dụng: <strong>${totalAmountToDeduct.toLocaleString()} VND</strong></li>
-                </ul>
-                <p>Người tuyển dụng:</p>
-                <ul>
-                  <li>${employer.companyName} (ID: ${employer.id})</li>
-                </ul>
-                <p>Thống báo trang thái:</p>
-                <p>Tổng số tiền: <strong>${totalAmountToDeduct.toLocaleString()} VND</strong></p>
-              `
-          })
-
-        await transaction.commit();
         return res.status(200).json({ success: true, message: "Giải phóng tiền thành công" });
-        
 
     } catch (error) {
-        await transaction.rollback();
+        // await Transaction.rollback();
         console.error(error);
         return res.status(500).json({ success: false, message: "Lỗi giải phóng thanh toán" });
     }
 };
+
+
+
 
 
 const getEscrowWallet = async (req, res) => {
@@ -367,6 +354,39 @@ const getEscrowWallet = async (req, res) => {
     }
 };
 
+const updateEscrowWallet = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const { balance } = req.body;
+
+        const escrowWallet = await EscrowWallet.findOne({
+            where: { userId },
+        });
+
+        if (!escrowWallet) {
+            return res.status(404).json({
+                success: false,
+                message: "Escrow Wallet của người dùng không tìm thấy",
+            });
+        }
+
+        await escrowWallet.update({
+            balance,
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Cap nhat Escrow Wallet thanh cong",
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: "Lỗi khi cap nhật Escrow Wallet",
+        });
+    }
+};
+
 const paymentHistory = async (req, res) => {
     try {
         const userId = req.userId;
@@ -394,5 +414,6 @@ const paymentHistory = async (req, res) => {
 module.exports = { createPayment, 
     paymentCallback, 
     releasePayment, 
-    getEscrowWallet, 
+    getEscrowWallet,
+    updateEscrowWallet, 
     paymentHistory};
