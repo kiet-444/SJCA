@@ -293,6 +293,7 @@ const releasePayment = async (req, res) => {
                   <ul>
                     <li>Transfer tiền cho người dùng: <strong>${totalAmountToDeduct.toLocaleString()} VND</strong></li>
                   </ul>
+                  <p>SJCP gửi nhà tuyển dụng: ${employer?.companyName || 'Unknown'}</p>
                 `
             });
         }
@@ -305,8 +306,8 @@ const releasePayment = async (req, res) => {
                 subject: 'Thanh toán công việc',
                 html: `
                   <p>Thanh toán cho công việc "${jobPosting.title}".</p>
-                  <p>Số tiền nhận: <strong>${totalAmountToDeduct.toLocaleString()} VND</strong></p>
-                  <p>Người tuyển dụng: ${employer?.companyName || 'Unknown'} (ID: ${employerId})</p>
+                  <p>Số tiền nhận: <strong>${amountToTransfer.toLocaleString()} VND</strong></p>
+                  <p>Người tuyển dụng: ${employer?.companyName || 'Unknown'}</p>
                 `
             });
         }
