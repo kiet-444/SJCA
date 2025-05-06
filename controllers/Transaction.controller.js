@@ -1,11 +1,17 @@
 const {Transaction } = require('../models');
+const { Op } = require('sequelize');
 
 const getTransaction = async (req, res) => {
     try {
         const userId = req.userId;
         
-        const transactions = await Transaction.findOne({
-            where: { userId },
+        const transactions = await Transaction.findAll({
+            where: {
+                [Op.or]: [
+                    { senderId: userId },
+                    { receiverId: userId }
+                ]
+            },
         });
 
         if (!transactions) {
@@ -24,7 +30,18 @@ const getTransaction = async (req, res) => {
     }
 }
 
+const createTransaction = async (req, res) => {
+    try {
+        const { senderId, amount } = req.body;
+        const transaction = await Transaction.create({ senderId, amount });
+        res.status(201).json({ message: 'Transaction created successfully', data: transaction });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
 module.exports = {
-    getTransaction
+    getTransaction,
+    createTransaction
 }
 

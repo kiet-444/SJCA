@@ -119,6 +119,48 @@ router.get("/paymentHistory", verifyToken, PaymentController.paymentHistory);
  */
 router.get("/escrowWallet", verifyToken, isWorkerOrEmployer, PaymentController.getEscrowWallet);
 
+/**
+ * @swagger
+ * /payment/escrowWallet/update:
+ *   put:
+ *     summary: Lý liệu payment
+ *     tags: [Payment]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Payment'
+ *     responses:
+ *       200:
+ *         description: Payment created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Payment'
+ *       500:
+ *         description: Đã xảy ra lỗi
+ * */
+router.put("/escrowWallet/update", verifyToken, isWorkerOrEmployer, PaymentController.updateEscrowWallet);
+
+/**
+ * @swagger
+ * /payment/services:
+ *   get:
+ *     summary: payment
+ *     tags: [Payment]
+ *     responses:
+ *       200:
+ *         description: Payment created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Payment'
+ *       500:
+ *         description: Đã xảy ra lỗi
+ * */
+router.post("/services", verifyToken, isWorkerOrEmployer, PaymentController.createPaymentService);
+
 // /**
 //  *  @swagger
 //  *  /api/payment/test-payos:

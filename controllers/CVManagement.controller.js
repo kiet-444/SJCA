@@ -236,6 +236,7 @@ const CVManagementController = {
             const newApplication = await Application.create({
                 jobPostingId,
                 cvId,
+                coverLetter,
                 status: 'submitted',
             });
 

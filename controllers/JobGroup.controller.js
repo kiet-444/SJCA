@@ -1,7 +1,9 @@
 const { Op } = require('sequelize');
+const { CV } = require('../models')
 const JobGroup = require('../models/JobGroup');
 const JobPosting = require('../models/JobPosting');
 const JobExecute = require('../models/JobExecute');
+const Application = require('../models/Application');
 
 
 const getAllJobGroups = async (req, res) => {
@@ -174,24 +176,23 @@ const updateStatusJobGroup = async (req, res) => {
 
 
         // Nếu chuyển sang "completed", phải kiểm tra job hoàn thành
-        // if (status === "completed") {
-        //     const jobPostings = await JobPosting.findAll({ where: { jobGroupId: id } });
+        if (status === "completed") {
+            const jobPostings = await JobPosting.findAll({ where: { jobGroupId: id } });
 
 
-        //     if (jobPostings.length === 0) {
-        //         return res.status(400).json({ message: "No JobPosting in this group" });
-        //     }
+            if (jobPostings.length === 0) {
+                return res.status(400).json({ message: "No JobPosting in this group" });
+            }
 
+            const allCompleted = jobPostings.every(job => job.status === "completed");  
 
-
-
-        //     const allCompleted = jobPostings.every(job => job.status === "completed");  
-
-
-        //     if (!allCompleted) {
-        //         return res.status(400).json({ message: "All JobPosting in 'completed' when update JobGroup" });
-        //     }
-        // }
+            if (!allCompleted) {
+                await JobPosting.update(
+                    { status: "completed" },
+                    { where: { jobGroupId: id } }
+                );
+            }
+        }
 
 
         const end_date = new Date(jobGroup.end_date);
