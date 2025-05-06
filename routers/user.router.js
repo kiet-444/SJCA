@@ -3,6 +3,15 @@ const express = require('express');
 const router = express.Router();
 const UserController = require('../controllers/User.controller');
 const { verifyToken, isWorkerOrEmployer, isAdmin, isSupportStaff  } = require('../middleware/auth.middleware');
+const multer = require('multer');
+const upload = multer();
+
+/**
+ * @swagger
+ * tags:
+ *   name: User
+ *   description: Management User
+ */
 
 
 /**
@@ -76,8 +85,7 @@ const { verifyToken, isWorkerOrEmployer, isAdmin, isSupportStaff  } = require('.
 *       500:
 *         description: Failed to update user profile
 */
-router.put('/update/:id', verifyToken, isWorkerOrEmployer, UserController.updateUser);
-
+router.put('/update/:id', verifyToken, isWorkerOrEmployer, upload.single('avatar'), UserController.updateUser);
 
 
 // Delete user (admin only)
@@ -306,6 +314,33 @@ router.get('/:id', verifyToken, isWorkerOrEmployer, UserController.getUserByPkId
  *        description: Failed to update user status 
  */
 router.get('/update/:id', verifyToken, isAdmin, UserController.updateUserStatus);
+
+/**
+ * @swagger
+ * /api/user/public/{id}:
+ *   get:
+ *     summary: Get a user by ID (public access)
+ *     tags: [User]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the user to retrieve
+ *     responses:
+ *       200:
+ *         description: User details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Failed to retrieve user
+ */
+router.get('/public/:id', UserController.getUserByPkId);
 
 
 module.exports = router;

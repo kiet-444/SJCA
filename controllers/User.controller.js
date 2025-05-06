@@ -1,6 +1,7 @@
 const { Op } = require('sequelize');
 const User = require('../models/User');
 const Review = require('../models/Review');
+const uploadFile = require('../controllers/Media.controller');
 
 
 const getCompanyByRating = async (req, res) => {
@@ -112,10 +113,12 @@ const getListCompany = async (req, res) => {
 
 
 
+
+
 const updateUser = async (req, res) => {
     try {
         const userId = req.userId;
-        const { password, ...updates } = req.body;
+        const { password, avatar, ...updates } = req.body;
 
 
         const user = await User.findByPk(userId);
@@ -126,6 +129,7 @@ const updateUser = async (req, res) => {
         }
 
 
+        // Handle password update
         if (password) {
             const salt = await bcrypt.genSalt(10);
             user.password = await bcrypt.hash(password, salt);
@@ -134,36 +138,46 @@ const updateUser = async (req, res) => {
         }
 
 
+        // Handle avatar upload if provided
+        if (req.file) {
+            try {
+                const avatarUrl = await uploadFile(req.file); // Use uploadFile
+                updates.avatar = avatarUrl; // Save the uploaded avatar URL
+            } catch (uploadError) {
+                return res.status(500).json({ message: 'Failed to upload avatar', error: uploadError.message });
+            }
+        }
 
 
+        // Update user fields based on role
         if (user.role === 'employer') {
-            const { companyName, avatar, dateOfBirth, address, phoneNumber, description } = updates;
+            const { companyName, dateOfBirth, address, phoneNumber, description } = updates;
             Object.assign(user, {
                 companyName,
-                avatar,
+                avatar: updates.avatar || user.avatar,
                 dateOfBirth,
                 address,
                 phoneNumber,
-                description: description ? description.trim() : null, 
+                description: description ? description.trim() : null,
             });
         } else {
-            const { fullname, avatar, dateOfBirth, gender, address, phoneNumber, description } = updates;
+            const { fullname, dateOfBirth, gender, address, phoneNumber, description } = updates;
 
 
-        
             const normalizedGender = gender ? gender.toLowerCase() : null;
 
 
             Object.assign(user, {
                 fullName: fullname || user.fullName,
-                avatar,
+                avatar: updates.avatar || user.avatar,
                 dateOfBirth,
                 sex: normalizedGender,
                 address,
                 phoneNumber,
-                description: description ? description.trim() : null, 
+                description: description ? description.trim() : null,
             });
         }
+
 
         const updatedUser = await user.save();
 
