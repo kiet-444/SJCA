@@ -18,6 +18,10 @@ const Service = sequelize.define('Service', {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
     },
+    orderCode: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
     description: {
         type: DataTypes.TEXT,
         allowNull: true, 
@@ -25,7 +29,7 @@ const Service = sequelize.define('Service', {
     status: {
         type: DataTypes.STRING,
         allowNull: false,
-        defaultValue: 'active',
+        defaultValue: 'inactive',
         validate: {
             isIn: [['active', 'inactive']], 
         },

@@ -1,4 +1,5 @@
 const { Op } = require('sequelize');
+const { CV } = require('../models')
 const JobGroup = require('../models/JobGroup');
 const JobPosting = require('../models/JobPosting');
 const JobExecute = require('../models/JobExecute');
