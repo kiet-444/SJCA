@@ -1,17 +1,26 @@
 const { ComplaintRecord} = require('../models');
+const uploadFile = require('../controllers/Media.controller');
+
 
 const ComplaintRecordController = {
     createComplaintRecord: async (req, res) => {
         try {
             const userId = req.userId;
             const { jobPostingId, description, type, image } = req.body;
+
+            let imageUrl = null;
             
+            if (req.file) {
+                const result = await uploadFile(req.file);
+                imageUrl = result.url;
+            }
+
             const newComplaintRecord = await ComplaintRecord.create({ 
                 jobPostingId, 
                 userId, 
                 description, 
                 type,
-                image,
+                image: imageUrl,
                 status: 'pending'
              });
             res.status(201).json({ message: 'Complaint record created successfully', data: newComplaintRecord });

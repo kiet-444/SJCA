@@ -4,6 +4,27 @@ const Review = require('../models/Review');
 const uploadFile = require('../controllers/Media.controller');
 
 
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
+const bcrypt = require('bcrypt');
+
+const dotenv = require('dotenv');
+dotenv.config();
+
+const transporter = nodemailer.createTransport({
+    host: process.env.MAIL_HOST,
+    port: 465,
+    secure: true,
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+    },
+    tls: {
+        rejectUnauthorized: false,
+    },
+});
+
+
 const getCompanyByRating = async (req, res) => {
     try {
         const topCompanies = await User.findAll({
@@ -129,7 +150,6 @@ const updateUser = async (req, res) => {
         }
 
 
-        // Handle password update
         if (password) {
             const salt = await bcrypt.genSalt(10);
             user.password = await bcrypt.hash(password, salt);
@@ -138,11 +158,10 @@ const updateUser = async (req, res) => {
         }
 
 
-        // Handle avatar upload if provided
         if (req.file) {
             try {
-                const avatarUrl = await uploadFile(req.file); // Use uploadFile
-                updates.avatar = avatarUrl; // Save the uploaded avatar URL
+                const avatarUrl = await uploadFile(req.file); 
+                updates.avatar = avatarUrl; 
             } catch (uploadError) {
                 return res.status(500).json({ message: 'Failed to upload avatar', error: uploadError.message });
             }
@@ -280,5 +299,60 @@ const updateUserStatus = async (req, res) => {
     }
 };
 
+const forgetPassword = async (req, res) => {
+    try {
 
-module.exports = { updateUser, deleteUser, getAllUsers, getUserByPkId, getTotalAccounts, getCompanyByRating, getAverageRatingByUserId, getListCompany, updateUserStatus };
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ message: 'Email is required' });
+        }
+
+        const user = await User.findOne({ where: { email } });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const resetToken = crypto.randomBytes(20).toString('hex');
+        user.resetToken = resetToken;
+        await user.save();
+
+        const resetLink = `http://localhost:3000/reset-password?token=${resetToken}`;
+
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'Password Reset',
+            text: `Click the following link to reset your password: ${resetLink}`,
+        });
+
+        // Gửi email reset password
+        res.status(200).json({ message: 'Reset password token sent successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to send reset password token', error });
+    }
+};
+
+const resetPassword = async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+        if (!token || !newPassword) {
+            return res.status(400).json({ message: 'Token and new password are required' });
+        }
+
+        const user = await User.findOne({ where: { resetToken: token } });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        user.resetPasswordToken = null;
+        await user.save();
+
+        res.status(200).json({ message: 'Reset password successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to reset password', error });
+    }
+};
+
+module.exports = { updateUser, deleteUser, getAllUsers, getUserByPkId, getTotalAccounts, getCompanyByRating, getAverageRatingByUserId, getListCompany, updateUserStatus, forgetPassword, resetPassword };

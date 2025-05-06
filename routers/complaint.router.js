@@ -3,6 +3,9 @@ const router = express.Router();
 const ComplaintController = require('../controllers/Complaint.controller');
 const { verifyToken, isWorkerOrEmployer, isSupportStaff } = require('../middleware/auth.middleware');
 
+const multer = require('multer');
+const upload = multer();
+
 /**
  * @swagger
  * tags:
@@ -75,7 +78,7 @@ const { verifyToken, isWorkerOrEmployer, isSupportStaff } = require('../middlewa
  *     security:
  *       - bearerAuth: []
  */
-router.post('/', verifyToken, ComplaintController.createComplaintRecord);
+router.post('/', verifyToken, upload.array('images', 5), isWorkerOrEmployer,  ComplaintController.createComplaintRecord);
 
 /**
  * @swagger

@@ -10,6 +10,14 @@ const Review = sequelize.define('Review', {
             key: 'id',
         },
     },
+    reviewerId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'User',
+            key: 'id',
+        },
+    },
     rating: {
         type: DataTypes.INTEGER,
         allowNull: false,
