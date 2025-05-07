@@ -67,7 +67,7 @@ const register = async (req, res) => {
 
         await newUser.save();
 
-        const verificationLink = `${process.env.BASE_URL}/api/auth/verify-email?token=${verificationToken}`;
+        const verificationLink = `${process.env.BASE_URL}/verify-email?token=${verificationToken}`;
 
         await transporter.sendMail({
             from: process.env.EMAIL_USER,

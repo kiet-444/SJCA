@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const UserController = require('../controllers/User.controller');
 const { verifyToken, isWorkerOrEmployer, isAdmin, isSupportStaff  } = require('../middleware/auth.middleware');
+
 const multer = require('multer');
 const upload = multer();
 
@@ -342,5 +343,46 @@ router.get('/update/:id', verifyToken, isAdmin, UserController.updateUserStatus)
  */
 router.get('/public/:id', UserController.getUserByPkId);
 
+// Forget password
+/** 
+ * @swagger
+ * /api/user/forget-password:
+ *   post:
+ *     summary: Forget password
+ *     tags: [User]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/User'
+ *     responses:
+ *       200:
+ *         description: Password reset link sent successfully
+ *       500:
+ *         description: Failed to send password reset link
+ */
+router.post('/forget-password', UserController.forgetPassword);
+
+// Reset password
+/** 
+ * @swagger
+ * /api/user/reset-password:
+ *   post:
+ *     summary: Reset password
+ *     tags: [User]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/User'
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *       500:
+ *         description: Failed to reset password
+ */
+router.post('/reset-password', UserController.resetPassword);
 
 module.exports = router;
