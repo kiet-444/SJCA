@@ -316,13 +316,13 @@ const forgetPassword = async (req, res) => {
         user.resetToken = resetToken;
         await user.save();
 
-        const resetLink = `http://localhost:3000/reset-password?token=${resetToken}`;
+        const resetLink = `https://seasonal-job.vercel.app/reset-password?token=${resetToken}`;
 
         await transporter.sendMail({
             from: process.env.EMAIL_USER,
             to: email,
-            subject: 'Password Reset',
-            text: `Click the following link to reset your password: ${resetLink}`,
+            subject: 'Đặt lại mật khẩu:',
+            text: `Xin hãy truy cập với link sau: ${resetLink}`,
         });
 
         // Gửi email reset password

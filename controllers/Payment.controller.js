@@ -387,7 +387,7 @@ const releasePayment = async (req, res) => {
         { Transaction }
       );
       // const worker = await User.findByPk(userIds[0]);
-      if (worker) {
+      if (user) {
         await transporter.sendMail({
           from: process.env.EMAIL_USER,
           to: user.email,
