@@ -26,23 +26,10 @@ const ReviewController = {
 
     getListRatings: async (req, res) => {
         try {
-            const { userId } = req.body;
-
-            const whereClause = {};
-
-            if (userId) {
-                whereClause.userId = userId;
-            }
-
+            const userId = req.userId;
             const ratings = await Review.findAll({
-                where: whereClause,
-                attributes: ['id', 'userId', 'reason', 'rating', 'createdAt'],
-                include: [
-                    {
-                        model: User,
-                        attributes: ['id', 'fullName', 'companyName', 'avatar']
-                    }
-                ],
+                where: { userId },
+                attributes: ['id', 'reviewerId', 'reason', 'rating', 'createdAt'],
                 order: [['createdAt', 'DESC']],
             });
 

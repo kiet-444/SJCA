@@ -49,6 +49,6 @@ router.post('/create', ReviewController.createReview);
  *                   items:
  *                     $ref: '#/components/schemas/Review'  
  */
-router.get('/', ReviewController.getListRatings);
+router.get('/', verifyToken, ReviewController.getListRatings);
 
 module.exports = router;
