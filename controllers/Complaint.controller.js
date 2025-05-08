@@ -6,15 +6,14 @@ const ComplaintRecordController = {
     createComplaintRecord: async (req, res) => {
         try {
             const userId = req.userId;
-            const { jobPostingId, description, type, image } = req.body;
+            const { description, type, image } = req.body;
 
             let imageUrls = [];
 
             if (req.files && req.files.length > 0) {
                 for (const file of req.files) {
-                    const result = await uploadFile(file); // bạn cần đảm bảo uploadFile hỗ trợ buffer
+                    const result = await uploadFile(file);
                     imageUrls.push(result);
-                    // console.log(result);
                 }
             }
             const newComplaintRecord = await ComplaintRecord.create({
