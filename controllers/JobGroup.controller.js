@@ -13,7 +13,7 @@ const getAllJobGroups = async (req, res) => {
         const startOfDay = new Date(today.setHours(0, 0, 0, 0));
         const endOfDay = new Date(today.setHours(23, 59, 59, 999));
 
-        let whereCondition = { status: 'active' };
+        let whereCondition = {};
 
         // Nếu có truyền start_date và end_date → lọc theo khoảng ngày
         if (start_date && end_date) {

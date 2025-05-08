@@ -211,18 +211,22 @@ const updateUser = async (req, res) => {
 const deleteUser = async (req, res) => {
     try {
         const { id } = req.params;
+        const [updatedCount] = await User.update(
+            { status: 'banned' },
+            { where: { id } }
+        );
 
 
-        const deletedUser = await User.destroy({ where: { id } });
-
-        if (!deletedUser) {
-            return res.status(404).json({ message: 'User not found' });
+        if (updatedCount === 0) {
+            return res.status(404).json({ message: 'User not found or already banned' });
         }
+       
         res.status(200).json({ message: 'User deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Failed to delete user', error });
     }
 };
+
 
 
 const getAllUsers = async (req, res) => {
