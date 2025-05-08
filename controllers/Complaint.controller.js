@@ -1,29 +1,29 @@
-const { ComplaintRecord} = require('../models');
-const uploadFile = require('../controllers/Media.controller');
+const { ComplaintRecord, User } = require('../models');
+const { uploadFile } = require('../controllers/Media.controller');
 
 
 const ComplaintRecordController = {
     createComplaintRecord: async (req, res) => {
         try {
             const userId = req.userId;
-            const {  description, type, image } = req.body;
+            const { jobPostingId, description, type, image } = req.body;
 
-            const imageUrls = [];
+            let imageUrls = [];
 
             if (req.files && req.files.length > 0) {
                 for (const file of req.files) {
-                    const result = await uploadFile(file);
-                    imageUrls.push(result.url);
+                    const result = await uploadFile(file); // bạn cần đảm bảo uploadFile hỗ trợ buffer
+                    imageUrls.push(result);
+                    // console.log(result);
+                }
             }
-        }
-
-            const newComplaintRecord = await ComplaintRecord.create({ 
-                userId, 
-                description, 
+            const newComplaintRecord = await ComplaintRecord.create({
+                userId,
+                description,
                 type,
-                image: imageUrls,
+                image: imageUrls.length > 0 ? JSON.stringify(imageUrls) : null,
                 status: 'pending'
-             });
+            });
             res.status(201).json({ message: 'Complaint record created successfully', data: newComplaintRecord });
         } catch (error) {
             console.error('Error creating complaint record:', error);
@@ -33,10 +33,15 @@ const ComplaintRecordController = {
 
     getAllComplaintRecords: async (req, res) => {
         try {
-            const complaintRecords = await ComplaintRecord.findAll();
+            const complaintRecords = await ComplaintRecord.findAll({
+                include: [{
+                    model: User,
+                    attributes: ['email']
+                }]
+            });
             res.status(200).json({ message: 'All complaint records fetched successfully', data: complaintRecords });
         } catch (error) {
-            console.error('Error fetching all complaint records:', error);   
+            console.error('Error fetching all complaint records:', error);
             res.status(500).json({ error: error.message });
         }
     },

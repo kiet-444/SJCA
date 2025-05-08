@@ -100,8 +100,7 @@ router.post('/', verifyToken, upload.array('images', 5), isWorkerOrEmployer,  Co
  *     security:
  *       - bearerAuth: []
  */
-router.get('/', verifyToken, isWorkerOrEmployer, ComplaintController.getAllComplaintRecords);
-
+router.get('/', verifyToken, isSupportStaff, ComplaintController.getAllComplaintRecords);
 /**
  * @swagger
  * /complaints/{id}:
