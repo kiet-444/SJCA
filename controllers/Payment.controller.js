@@ -98,26 +98,30 @@ const createPayment = async (req, res) => {
         where: { jobGroupId },
       });
 
+
       let total = 0;
       for (const job of jobPostings) {
         const number_of_person = job.number_of_person || 1;
         total += (job.salary || 0) * number_of_person;
       }
 
+
       const exitService = await Service.findOne({
         where: {
           userId,
+          status: "active",
         },
       });
 
-      if (exitService && exitService.status === "active") {
+
+      if (exitService) {
         total += 0;
+      } else {
+        total += 50000;
       }
-
-      total += 50000;
-
       return total;
     };
+
 
     const totalAmount = await calculateJobGroupTotal(jobGroupId);
 

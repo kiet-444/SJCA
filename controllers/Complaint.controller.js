@@ -74,18 +74,23 @@ const ComplaintRecordController = {
             const { id } = req.params;
             const { status } = req.body;
 
+
             const complaintRecord = await ComplaintRecord.findByPk(id);
+
 
             if (!complaintRecord) {
                 return res.status(404).json({ message: 'Complaint record not found' });
             }
 
+
             if (req.userRole !== 'support staff') {
                 return res.status(403).json({ message: 'Access denied' });
             }
 
-            complaint.status = status;
-            await complaint.save();
+
+            complaintRecord.status = status;
+            await complaintRecord.save();
+
 
             res.status(200).json({ message: 'Complaint record updated successfully', data: complaintRecord });
         } catch (error) {
@@ -93,6 +98,7 @@ const ComplaintRecordController = {
             res.status(500).json({ error: error.message });
         }
     },
+
 
     deleteComplaintRecord: async (req, res) => {
         try {
