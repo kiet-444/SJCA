@@ -2,7 +2,6 @@ const { Transaction } = require('../models');
 const { Op } = require('sequelize');
 const EscrowWallet = require('../models/EscrowWallet');
 
-
 const getTransaction = async (req, res) => {
     try {
         const userId = req.userId;
@@ -14,7 +13,6 @@ const getTransaction = async (req, res) => {
                 ]
             },
         });
-
 
         if (!transactions) {
             return res.status(404).json({
@@ -33,7 +31,6 @@ const getTransaction = async (req, res) => {
     }
 }
 
-
 const createTransaction = async (req, res) => {
     try {
         const userId = req.userId;
@@ -44,7 +41,7 @@ const createTransaction = async (req, res) => {
 
 
         if (exitEscrowWallet && exitEscrowWallet.balance >= amount) {
-            await Transaction.create({ senderId: userId, receiverId, amount, description });
+            await Transaction.create({ senderId: userId, receiverId, amount, description, status : 'COMPLETED' });
             await exitEscrowWallet.update({ balance: exitEscrowWallet.balance - amount });
         } else if (exitEscrowWallet.balance < amount) {
             res.status(400).json({ message: 'Insufficient balance' });
