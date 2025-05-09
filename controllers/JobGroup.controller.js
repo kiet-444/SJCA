@@ -195,18 +195,18 @@ const updateStatusJobGroup = async (req, res) => {
         }
 
 
-        const end_date = new Date(jobGroup.end_date);
-        const today = new Date();
+        // const end_date = new Date(jobGroup.end_date);
+        // const today = new Date();
 
 
-        end_date.setHours(0, 0, 0, 0);
-        today.setHours(0, 0, 0, 0);
+        // end_date.setHours(0, 0, 0, 0);
+        // today.setHours(0, 0, 0, 0);
 
 
-        if (end_date.getTime() < today.getTime()) {
-            await jobGroup.update({ status: "completed" });
-            return res.status(400).json({ message: "JobGroup has expired and was set to completed automatically." });
-        }
+        // if (end_date.getTime() < today.getTime()) {
+        //     await jobGroup.update({ status: "completed" });
+        //     return res.status(400).json({ message: "JobGroup has expired and was set to completed automatically." });
+        // }
 
 
         // Nếu chuyển sang "active", phải kiểm tra đã thanh toán + có job
