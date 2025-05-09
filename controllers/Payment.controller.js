@@ -56,7 +56,7 @@ const createPaymentService = async (req, res) => {
       amount: price,
       orderCode: Number(orderCode),
       description: "Thanh toán Service",
-      returnUrl: "https://seasonal-job.vercel.app/employer-premium",
+      returnUrl: "https://seasonal-job.vercel.app/payment-service-successful",
       cancelUrl: "https://seasonal-job.vercel.app",
     };
 
@@ -98,13 +98,11 @@ const createPayment = async (req, res) => {
         where: { jobGroupId },
       });
 
-
       let total = 0;
       for (const job of jobPostings) {
         const number_of_person = job.number_of_person || 1;
         total += (job.salary || 0) * number_of_person;
       }
-
 
       const exitService = await Service.findOne({
         where: {
@@ -113,7 +111,6 @@ const createPayment = async (req, res) => {
         },
       });
 
-
       if (exitService) {
         total += 0;
       } else {
@@ -121,7 +118,6 @@ const createPayment = async (req, res) => {
       }
       return total;
     };
-
 
     const totalAmount = await calculateJobGroupTotal(jobGroupId);
 
