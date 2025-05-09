@@ -317,7 +317,7 @@ const forgetPassword = async (req, res) => {
         }
 
         const resetToken = crypto.randomBytes(20).toString('hex');
-        user.resetToken = resetToken;
+        user.resetPasswordToken = resetToken;
         await user.save();
 
         const resetLink = `https://seasonal-job.vercel.app/reset-password?token=${resetToken}`;
@@ -343,7 +343,7 @@ const resetPassword = async (req, res) => {
             return res.status(400).json({ message: 'Token and new password are required' });
         }
 
-        const user = await User.findOne({ where: { resetToken: token } });
+        const user = await User.findOne({ where: { resetPasswordToken: token } });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
